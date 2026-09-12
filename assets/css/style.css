@@ -1,0 +1,43 @@
+* { box-sizing: border-box; }
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f6f8;
+    color: #222;
+}
+
+.site-header {
+    background: #1f4e78;
+    color: white;
+    padding: 16px 24px;
+}
+
+.site-header nav a {
+    color: white;
+    margin-right: 16px;
+    text-decoration: none;
+}
+
+main {
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.site-footer {
+    text-align: center;
+    padding: 16px;
+    color: #666;
+    font-size: 14px;
+}
+
+.status-ok {
+    color: #1d9e75;
+    font-weight: bold;
+}
+
+.status-error {
+    color: #d85a30;
+    font-weight: bold;
+}

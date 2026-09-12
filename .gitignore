@@ -1,0 +1,10 @@
+# Environment / local config
+config/local.php
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+*.log
