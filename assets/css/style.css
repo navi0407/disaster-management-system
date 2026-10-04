@@ -41,3 +41,26 @@ main {
     color: #d85a30;
     font-weight: bold;
 }
+
+.data-table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+.data-table th, .data-table td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+.data-table th { background: #1f4e78; color: white; }
+
+.filter-bar { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+.filter-bar input, .filter-bar select { padding: 6px; }
+
+.inline-form { display: flex; gap: 4px; }
+
+.error-box { background: #fde8e8; color: #a33; border: 1px solid #a33; padding: 10px; margin: 10px 0; }
+.success-box { background: #e6f7ee; color: #1d9e75; border: 1px solid #1d9e75; padding: 10px; margin: 10px 0; }
+
+.status-reported { color: #555; }
+.status-monitoring { color: #b8860b; }
+.status-active { color: #d85a30; font-weight: bold; }
+.status-response { color: #d85a30; font-weight: bold; }
+.status-recovery { color: #1d6fa5; }
+.status-closed { color: #1d9e75; }
+.status-inactive { color: #999; }
+
+form label { display: block; margin-top: 10px; font-weight: bold; }
+form input, form select { padding: 6px; width: 100%; max-width: 400px; margin-top: 4px; }
