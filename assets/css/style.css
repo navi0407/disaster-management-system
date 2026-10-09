@@ -64,3 +64,13 @@ main {
 
 form label { display: block; margin-top: 10px; font-weight: bold; }
 form input, form select { padding: 6px; width: 100%; max-width: 400px; margin-top: 4px; }
+
+.occupancy-bar { background: #e5e7eb; border-radius: 4px; height: 10px; width: 120px; overflow: hidden; margin-bottom: 2px; }
+.occupancy-fill { height: 100%; }
+.occupancy-fill.state-available { background: #1d9e75; }
+.occupancy-fill.state-nearly-full { background: #d9a400; }
+.occupancy-fill.state-full { background: #d85a30; }
+
+.level-available { color: #1d9e75; font-weight: bold; }
+.level-nearly-full { color: #b8860b; font-weight: bold; }
+.level-full { color: #d85a30; font-weight: bold; }
