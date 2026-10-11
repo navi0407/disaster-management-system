@@ -74,3 +74,6 @@ form input, form select { padding: 6px; width: 100%; max-width: 400px; margin-to
 .level-available { color: #1d9e75; font-weight: bold; }
 .level-nearly-full { color: #b8860b; font-weight: bold; }
 .level-full { color: #d85a30; font-weight: bold; }
+
+.status-checked-in { color: #1d6fa5; font-weight: bold; }
+.status-checked-out { color: #999; }
