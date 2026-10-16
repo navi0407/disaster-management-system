@@ -1,79 +1,157 @@
+/* ===== Base ===== */
+:root {
+    --blue: #22384d;
+    --blue-dark: #162736;
+    --accent: #d9622b;
+    --link: #2a6f97;
+    --bg: #f5f6f7;
+    --border: #d5dbe1;
+    --text: #222;
+    --muted: #666;
+    --green: #1d9e75;
+    --amber: #b8860b;
+    --red: #d85a30;
+}
 * { box-sizing: border-box; }
-
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
     margin: 0;
-    background: #f4f6f8;
-    color: #222;
+    background: var(--bg);
+    color: var(--text);
 }
 
-.site-header {
-    background: #1f4e78;
-    color: white;
-    padding: 16px 24px;
-}
-
+/* ===== Header and menu ===== */
+.site-header { background: var(--blue); color: white; padding: 14px 24px 10px; border-bottom: 4px solid var(--accent); }
+.site-header h2 { margin: 0 0 8px; font-size: 22px; }
+.site-header nav { display: flex; flex-wrap: wrap; gap: 4px; }
 .site-header nav a {
     color: white;
-    margin-right: 16px;
+    margin-right: 0;
+    padding: 5px 10px;
+    border-radius: 4px;
     text-decoration: none;
-}
-
-main {
-    padding: 24px;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.site-footer {
-    text-align: center;
-    padding: 16px;
-    color: #666;
     font-size: 14px;
 }
+.site-header nav a:hover { background: rgba(255, 255, 255, 0.18); }
 
-.status-ok {
-    color: #1d9e75;
-    font-weight: bold;
+/* ===== Page area ===== */
+main { padding: 24px; max-width: 1000px; margin: 0 auto; }
+main.wide { max-width: 1200px; }
+h1 { font-size: 26px; margin: 0 0 14px; }
+h2 { font-size: 19px; margin: 22px 0 8px; }
+main a { color: var(--link); text-decoration: none; }
+main a:hover { text-decoration: underline; }
+.site-footer { text-align: center; padding: 16px; color: var(--muted); font-size: 14px; margin-top: 24px; border-top: 1px solid var(--border); }
+
+/* ===== Forms ===== */
+form label { display: block; margin-top: 12px; font-weight: bold; font-size: 14px; }
+form input, form select { padding: 7px 9px; width: 100%; max-width: 400px; margin-top: 4px; }
+form input[type="checkbox"], form input[type="radio"] { width: auto; margin-top: 0; }
+input[type="text"], input[type="number"], input[type="date"], input[type="password"], select, textarea {
+    padding: 7px 9px;
+    border: 1px solid #c3cbd3;
+    border-radius: 4px;
+    background: white;
+    font-size: 14px;
+    font-family: inherit;
+}
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(34, 56, 77, 0.15);
 }
 
-.status-error {
-    color: #d85a30;
-    font-weight: bold;
+/* ===== Buttons ===== */
+button, input[type="submit"] {
+    background: var(--blue);
+    color: white;
+    border: 1px solid var(--blue);
+    border-radius: 4px;
+    padding: 7px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
 }
+button:hover, input[type="submit"]:hover { background: var(--blue-dark); }
+.data-table button {
+    background: white;
+    color: var(--blue);
+    padding: 3px 10px;
+    font-size: 13px;
+}
+.data-table button:hover { background: var(--blue); color: white; }
 
-.data-table { border-collapse: collapse; width: 100%; margin-top: 12px; }
-.data-table th, .data-table td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
-.data-table th { background: #1f4e78; color: white; }
+/* ===== Search and filters ===== */
+.filter-bar, .search-box {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    margin: 12px 0;
+}
+.filter-bar input, .filter-bar select, .search-box input { width: auto; max-width: none; margin-top: 0; }
+.search-box input { min-width: 260px; }
 
-.filter-bar { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
-.filter-bar input, .filter-bar select { padding: 6px; }
+/* ===== Tables ===== */
+.data-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 12px;
+    background: white;
+    font-size: 14px;
+}
+.data-table th, .data-table td { border: 1px solid #e1e5ea; padding: 8px 12px; text-align: left; vertical-align: middle; }
+.data-table th { background: #e8edf1; color: var(--blue); white-space: nowrap; border-bottom: 2px solid var(--blue); }
+.data-table tbody tr:nth-child(even) { background: #f8fafb; }
+.data-table tbody tr:hover { background: #eef3f8; }
+.data-table select, .data-table input { width: auto; max-width: none; margin-top: 0; padding: 4px 6px; font-size: 13px; }
+.inline-form { display: flex; gap: 6px; align-items: center; }
 
-.inline-form { display: flex; gap: 4px; }
+/* ===== Messages ===== */
+.error-box { background: #fde8e8; color: #a33; border: 1px solid #a33; border-left-width: 5px; border-radius: 4px; padding: 10px 12px; margin: 10px 0; }
+.success-box { background: #e6f7ee; color: #1d7a5a; border: 1px solid var(--green); border-left-width: 5px; border-radius: 4px; padding: 10px 12px; margin: 10px 0; }
+.status-ok { color: var(--green); font-weight: bold; }
+.status-error { color: var(--red); font-weight: bold; }
 
-.error-box { background: #fde8e8; color: #a33; border: 1px solid #a33; padding: 10px; margin: 10px 0; }
-.success-box { background: #e6f7ee; color: #1d9e75; border: 1px solid #1d9e75; padding: 10px; margin: 10px 0; }
-
+/* ===== Status colors ===== */
 .status-reported { color: #555; }
-.status-monitoring { color: #b8860b; }
-.status-active { color: #d85a30; font-weight: bold; }
-.status-response { color: #d85a30; font-weight: bold; }
-.status-recovery { color: #1d6fa5; }
-.status-closed { color: #1d9e75; }
+.status-monitoring { color: var(--amber); }
+.status-active { color: var(--red); font-weight: bold; }
+.status-response { color: var(--red); font-weight: bold; }
+.status-recovery { color: var(--link); }
+.status-closed { color: var(--green); }
 .status-inactive { color: #999; }
+.status-checked-in { color: var(--link); font-weight: bold; }
+.status-checked-out { color: #999; }
 
-form label { display: block; margin-top: 10px; font-weight: bold; }
-form input, form select { padding: 6px; width: 100%; max-width: 400px; margin-top: 4px; }
-
+/* ===== Evacuation centers ===== */
 .occupancy-bar { background: #e5e7eb; border-radius: 4px; height: 10px; width: 120px; overflow: hidden; margin-bottom: 2px; }
 .occupancy-fill { height: 100%; }
-.occupancy-fill.state-available { background: #1d9e75; }
+.occupancy-fill.state-available { background: var(--green); }
 .occupancy-fill.state-nearly-full { background: #d9a400; }
-.occupancy-fill.state-full { background: #d85a30; }
+.occupancy-fill.state-full { background: var(--red); }
+.level-available { color: var(--green); font-weight: bold; }
+.level-nearly-full { color: var(--amber); font-weight: bold; }
+.level-full { color: var(--red); font-weight: bold; }
 
-.level-available { color: #1d9e75; font-weight: bold; }
-.level-nearly-full { color: #b8860b; font-weight: bold; }
-.level-full { color: #d85a30; font-weight: bold; }
+/* ===== Resources ===== */
+.stock-in { color: var(--green); font-weight: bold; }
+.stock-low { color: var(--amber); font-weight: bold; }
+.stock-out { color: var(--red); font-weight: bold; }
+.expiry-soon { color: var(--amber); font-weight: bold; }
+.expiry-expired { color: var(--red); font-weight: bold; }
+.tx-receive { color: var(--green); font-weight: bold; }
+.tx-release { color: var(--link); font-weight: bold; }
 
-.status-checked-in { color: #1d6fa5; font-weight: bold; }
-.status-checked-out { color: #999; }
+/* ===== Small screens ===== */
+@media (max-width: 700px) {
+    main { padding: 16px; }
+    .data-table { display: block; overflow-x: auto; white-space: nowrap; }
+    .search-box input { min-width: 0; width: 100%; }
+}
