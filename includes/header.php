@@ -10,6 +10,7 @@
         <a href="evacuation_center_monitor.php">Evacuation Centers</a>
         <a href="evacuee_monitor.php">Evacuees</a>
         <a href="resource_monitor.php">Resources</a>
+        <a href="relief_monitor.php">Relief</a>
         <!-- More links get added here as you build each module -->
     </nav>
 </header>
