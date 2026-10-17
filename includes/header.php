@@ -11,6 +11,7 @@
         <a href="evacuee_monitor.php">Evacuees</a>
         <a href="resource_monitor.php">Resources</a>
         <a href="relief_monitor.php">Relief</a>
+        <a href="relief_request_monitor.php">Distribution</a>
         <!-- More links get added here as you build each module -->
     </nav>
 </header>

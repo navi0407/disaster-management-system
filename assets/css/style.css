@@ -155,3 +155,10 @@ button:hover, input[type="submit"]:hover { background: var(--blue-dark); }
     .data-table { display: block; overflow-x: auto; white-space: nowrap; }
     .search-box input { min-width: 0; width: 100%; }
 }
+
+/* WP11 */
+.status-requested { color: #b8860b; font-weight: bold; }
+.status-approved { color: #1d6fa5; font-weight: bold; }
+.status-rejected { color: #d85a30; font-weight: bold; }
+.status-cancelled { color: #999; }
+.status-released { color: #1d9e75; font-weight: bold; }

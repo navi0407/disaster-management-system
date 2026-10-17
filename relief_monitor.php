@@ -31,7 +31,10 @@ $expiry = $_GET['expiry'] ?? '';
 
 $sql = "SELECT i.*,
           COALESCE((SELECT SUM(quantity) FROM relief_receipts WHERE relief_item_id = i.relief_item_id), 0) AS received,
-          COALESCE((SELECT SUM(quantity) FROM distribution_items WHERE relief_item_id = i.relief_item_id), 0) AS distributed,
+          COALESCE((SELECT SUM(quantity) FROM distribution_items WHERE relief_item_id = i.relief_item_id AND date_given IS NOT NULL), 0) AS distributed,
+          COALESCE((SELECT SUM(di.quantity) FROM distribution_items di
+             JOIN relief_distributions d ON d.distribution_id = di.distribution_id
+             WHERE di.relief_item_id = i.relief_item_id AND d.status = 'Approved'), 0) AS reserved,
           (SELECT MIN(expiration_date) FROM relief_receipts
              WHERE relief_item_id = i.relief_item_id AND expiration_date >= CURDATE()) AS next_expiry,
           (SELECT COUNT(*) FROM relief_receipts
@@ -105,11 +108,11 @@ foreach ($all as $r) {
 
     <table class="data-table">
         <thead><tr>
-            <th>Item</th><th>Unit</th><th>Received</th><th>Given out</th><th>In stock</th><th>Min</th>
+            <th>Item</th><th>Unit</th><th>Received</th><th>Given out</th><th>Reserved</th><th>In stock</th><th>Min</th>
             <th>Stock level</th><th>Next expiry</th><th>Actions</th>
         </tr></thead>
         <tbody>
-        <?php if (!$rows): ?><tr><td colspan="9">No records found.</td></tr><?php endif; ?>
+        <?php if (!$rows): ?><tr><td colspan="10">No records found.</td></tr><?php endif; ?>
         <?php foreach ($rows as $r): ?>
             <tr>
                 <td><?= relEsc($r['item_name']) ?>
@@ -117,6 +120,7 @@ foreach ($all as $r) {
                 <td><?= relEsc($r['unit']) ?></td>
                 <td><?= (int) $r['received'] ?></td>
                 <td><?= (int) $r['distributed'] ?></td>
+                <td><?= (int) $r['reserved'] ?></td>
                 <td><strong><?= (int) $r['stock'] ?></strong></td>
                 <td><?= (int) $r['min_stock_level'] ?></td>
                 <td class="<?= relStockClass($r['level']) ?>"><?= $r['level'] ?></td>
