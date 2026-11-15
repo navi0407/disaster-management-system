@@ -177,3 +177,22 @@ button:hover, input[type="submit"]:hover { background: var(--blue-dark); }
 .user-box { text-align: right; font-size: 14px; margin-top: 8px; }
 .user-box a { color: #ffd9c9; text-decoration: none; }
 .user-box a:hover { text-decoration: underline; }
+
+/* WP15 */
+.kpi-grid { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.kpi { background: #fff; border: 1px solid #ccc; border-left: 4px solid #1f4e78; border-radius: 4px; padding: 10px 16px; min-width: 150px; }
+.kpi-value { font-size: 24px; font-weight: bold; color: #1f4e78; }
+.kpi-label { font-size: 13px; color: #555; }
+.report-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 16px; }
+.report-card { display: block; background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 14px 16px; text-decoration: none; color: #222; }
+.report-card:hover { border-color: #1f4e78; }
+.report-card strong { display: block; color: #1f4e78; margin-bottom: 4px; }
+.report-card span { font-size: 14px; color: #555; }
+.print-only { display: none; }
+@media print {
+    .site-header, .site-footer, .no-print, .user-box { display: none !important; }
+    .print-only { display: block; }
+    body { background: #fff; }
+    main, main.wide { max-width: none; padding: 0; }
+    .data-table th { background: #ddd !important; color: #000 !important; }
+}
