@@ -162,3 +162,18 @@ button:hover, input[type="submit"]:hover { background: var(--blue-dark); }
 .status-rejected { color: #d85a30; font-weight: bold; }
 .status-cancelled { color: #999; }
 .status-released { color: #1d9e75; font-weight: bold; }
+
+/* WP12 */
+.ack-yes { color: #1d9e75; font-weight: bold; }
+.ack-no { color: #d85a30; font-weight: bold; }
+.data-table input[type="number"] { width: 80px; }
+
+/* WP13 */
+.check-pass { color: #1d9e75; font-weight: bold; }
+.check-warn { color: #b8860b; font-weight: bold; }
+.check-fail { color: #d85a30; font-weight: bold; }
+
+/* WP14 */
+.user-box { text-align: right; font-size: 14px; margin-top: 8px; }
+.user-box a { color: #ffd9c9; text-decoration: none; }
+.user-box a:hover { text-decoration: underline; }

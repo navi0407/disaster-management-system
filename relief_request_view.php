@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id > 0 && isset($_POST['action']))
     $action = $_POST['action'];
     $reason = trim($_POST['reason'] ?? '');
     if (!in_array($action, ['approve', 'reject', 'cancel'], true)) $errors[] = 'Unknown action.';
+    if (in_array($action, ['approve', 'reject'], true) && !authCan('approve')) $errors[] = 'Your role is not allowed to approve or reject requests.';
     if ($action === 'reject' && $reason === '') $errors[] = 'Please write a reason for rejecting this request.';
     if (mb_strlen($reason) > 200) $errors[] = 'The reason must be 200 characters or less.';
 
@@ -141,7 +142,7 @@ $doneMessages = ['approved' => 'Request approved. The items are now reserved.', 
         <?php $waiting = $dist['status'] === 'Requested'; $short = false; ?>
         <table class="data-table">
             <thead><tr>
-                <th>Item</th><th>Quantity</th>
+                <th>Item</th><th>Quantity</th><?php if ($dist['status'] === 'Released'): ?><th>Household</th><th>Signed</th><?php endif; ?>
                 <?php if ($waiting): ?><th>In stock</th><th>Reserved by others</th><th>Available</th><th>Check</th><?php endif; ?>
             </tr></thead>
             <tbody>
@@ -149,6 +150,7 @@ $doneMessages = ['approved' => 'Request approved. The items are now reserved.', 
                 <tr>
                     <td><?= relEsc($ln['item_name']) ?></td>
                     <td><?= (int) $ln['quantity'] ?> <?= relEsc($ln['unit']) ?></td>
+                    <?php if ($dist['status'] === 'Released'): ?><td>#<?= (int) $ln['household_id'] ?></td><td class="<?= $ln['signature_on_file'] ? 'ack-yes' : 'ack-no' ?>"><?= $ln['signature_on_file'] ? 'Yes' : 'Not yet' ?></td><?php endif; ?>
                     <?php if ($waiting):
                         $iid = (int) $ln['relief_item_id'];
                         $stock = relStock($conn, $iid);
@@ -166,9 +168,16 @@ $doneMessages = ['approved' => 'Request approved. The items are now reserved.', 
             </tbody>
         </table>
 
+        <?php if ($dist['status'] === 'Approved'): ?>
+            <p style="margin-top:16px"><a href="relief_release.php?id=<?= (int) $id ?>"><strong>Release items &rarr;</strong></a></p>
+        <?php elseif ($dist['status'] === 'Released'): ?>
+            <p style="margin-top:16px"><a href="relief_acknowledge.php?id=<?= (int) $id ?>">Beneficiary acknowledgment &rarr;</a></p>
+        <?php endif; ?>
+
         <?php if ($waiting): ?>
             <?php if ($short): ?><div class="error-box">Some items are short, so this request cannot be approved yet. Record more receipts or reject it.</div><?php endif; ?>
 
+            <?php if (authCan('approve')): ?>
             <form method="post" style="margin-top:16px">
                 <input type="hidden" name="distribution_id" value="<?= (int) $id ?>">
                 <button type="submit" name="action" value="approve">Approve</button>
@@ -181,6 +190,8 @@ $doneMessages = ['approved' => 'Request approved. The items are now reserved.', 
                 </label>
                 <p><button type="submit" name="action" value="reject">Reject</button></p>
             </form>
+
+            <?php endif; ?>
 
             <form method="post" onsubmit="return confirm('Cancel this request?');">
                 <input type="hidden" name="distribution_id" value="<?= (int) $id ?>">

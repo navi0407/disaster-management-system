@@ -11,4 +11,9 @@ $conn = mysqli_connect($host, $dbUser, $dbPass, $dbName);
 if (!$conn) {
     die("Database connection failed: " . mysqli_connect_error());
 }
+
+require_once __DIR__ . '/../includes/auth.php';
+authGuard($conn);
+
 ?>
+

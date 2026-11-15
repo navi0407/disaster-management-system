@@ -12,6 +12,9 @@
         <a href="resource_monitor.php">Resources</a>
         <a href="relief_monitor.php">Relief</a>
         <a href="relief_request_monitor.php">Distribution</a>
+        <a href="relief_distribution_monitor.php">Given Out</a>
+        <a href="integration_check.php">Check</a>
         <!-- More links get added here as you build each module -->
     </nav>
+    <?php require_once __DIR__ . '/auth_ui.php'; authRenderUserBox(); ?>
 </header>
