@@ -8,9 +8,11 @@ require_once 'includes/report_helpers.php';
 $disasterId = trim($_GET['disaster_id'] ?? '');
 $disId = ($disasterId !== '' && ctype_digit($disasterId)) ? (int) $disasterId : 0;
 
+$activeOnly = ($disasterId === 'active');   // "Active disasters only": every disaster that is not Closed
 $hhRows = $disId
     ? rptQuery($conn, "SELECT DISTINCT h.household_id FROM households h JOIN disasters d ON TRIM(h.barangay) = TRIM(d.area_affected) WHERE d.disaster_id = ?", 'i', [$disId])
-    : rptQuery($conn, "SELECT DISTINCT h.household_id FROM households h JOIN disasters d ON TRIM(h.barangay) = TRIM(d.area_affected)");
+    : rptQuery($conn, "SELECT DISTINCT h.household_id FROM households h JOIN disasters d ON TRIM(h.barangay) = TRIM(d.area_affected)"
+        . ($activeOnly ? " WHERE COALESCE(d.status, '') <> 'Closed'" : ""));
 $hhIds = array_map('intval', array_column($hhRows, 'household_id'));
 
 $totalRes = 0; $vulnTotal = 0; $byBarangay = []; $vulnRows = []; $centerRows = []; $sheltered = 0;
@@ -51,9 +53,9 @@ foreach (rptQuery($conn, "SELECT disaster_id, disaster_number, disaster_name FRO
 
 rptPage([
     'title' => 'Affected Residents Report',
-    'intro' => $disId ? 'Residents living in the area of the chosen disaster.' : 'Residents living in the area of any disaster. Each resident is counted once.',
+    'intro' => $disId ? 'Residents living in the area of the chosen disaster.' : ($activeOnly ? 'Residents living in the area of any active disaster (not Closed). Each resident is counted once.' : 'Residents living in the area of any disaster. Each resident is counted once.'),
     'csv' => 'affected_residents_report',
-    'filters' => rptSelect('disaster_id', $disasterOptions, $disasterId, 'All disasters'),
+    'filters' => rptSelect('disaster_id', ['active' => 'Active disasters only'] + $disasterOptions, $disasterId, 'All disasters'),
     'kpis' => [
         ['Total affected residents', $totalRes], ['Affected households', count($hhIds)],
         ['Vulnerable residents', $vulnTotal], ['Sheltered right now', $sheltered],

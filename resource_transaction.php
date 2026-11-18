@@ -70,7 +70,7 @@ $resources = resQuery($conn,
 <head>
     <meta charset="UTF-8">
     <title>Receive or Release Stock</title>
-    <link rel="stylesheet" href="<?= resEsc(resCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

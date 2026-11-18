@@ -57,7 +57,7 @@ $notes = ['out' => 'You have been logged out.', 'expired' => 'You were logged ou
 <head>
     <meta charset="UTF-8">
     <title>Log in</title>
-    <link rel="stylesheet" href="<?= authEsc(authCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <header class="site-header"><h1 style="margin:0">Disaster Management System</h1></header>

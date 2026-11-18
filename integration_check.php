@@ -159,7 +159,7 @@ $statusRows = relQuery($conn, "SELECT status, COUNT(*) AS n FROM relief_distribu
 <head>
     <meta charset="UTF-8">
     <title>Integration Check</title>
-    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

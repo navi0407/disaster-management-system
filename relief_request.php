@@ -74,7 +74,7 @@ $centers = relQuery($conn, "SELECT center_id, center_name, barangay FROM evacuat
 <head>
     <meta charset="UTF-8">
     <title>Request Relief Distribution</title>
-    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

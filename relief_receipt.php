@@ -65,7 +65,7 @@ $items = dbGetAll($conn, 'relief_items', 'item_name');
 <head>
     <meta charset="UTF-8">
     <title>Record Relief Receipt</title>
-    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

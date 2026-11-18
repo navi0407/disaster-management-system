@@ -2,6 +2,7 @@
     <h2>Disaster Management System</h2>
     <nav>
         <a href="index.php">Home</a>
+        <a href="dashboard.php">Dashboard</a>
         <a href="disaster_types.php">Disaster Types</a>
         <a href="disaster_monitor.php">Disasters</a>
         <a href="household_monitor.php">Households</a>

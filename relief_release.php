@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $dist) {
 <head>
     <meta charset="UTF-8">
     <title>Release Relief Items</title>
-    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

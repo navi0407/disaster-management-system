@@ -35,7 +35,7 @@ foreach ($rows as $r) $totalQty += (int) $r['quantity'];
 <head>
     <meta charset="UTF-8">
     <title>Relief Receipts</title>
-    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>
