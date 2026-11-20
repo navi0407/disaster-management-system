@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="app_extra.css?v=1">
 <header class="site-header">
     <h2>Disaster Management System</h2>
     <nav>

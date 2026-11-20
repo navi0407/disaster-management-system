@@ -1,0 +1,59 @@
+/* app_extra.css: styles for WP14 (user box), WP15 (reports) and WP16 (dashboard). Linked from includes/header.php. */
+
+/* WP14 */
+.user-box { text-align: right; font-size: 14px; margin-top: 8px; }
+.user-box a { color: #ffd9c9; text-decoration: none; }
+.user-box a:hover { text-decoration: underline; }
+
+/* WP15 */
+.kpi-grid { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.kpi { background: #fff; border: 1px solid #ccc; border-left: 4px solid #1f4e78; border-radius: 4px; padding: 10px 16px; min-width: 150px; }
+.kpi-value { font-size: 24px; font-weight: bold; color: #1f4e78; }
+.kpi-label { font-size: 13px; color: #555; }
+.report-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 16px; }
+.report-card { display: block; background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 14px 16px; text-decoration: none; color: #222; }
+.report-card:hover { border-color: #1f4e78; }
+.report-card strong { display: block; color: #1f4e78; margin-bottom: 4px; }
+.report-card span { font-size: 14px; color: #555; }
+.print-only { display: none; }
+@media print {
+    .site-header, .site-footer, .no-print, .user-box { display: none !important; }
+    .print-only { display: block; }
+    body { background: #fff; }
+    main, main.wide { max-width: none; padding: 0; }
+    .data-table th { background: #ddd !important; color: #000 !important; }
+}
+
+/* WP16 */
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 16px 0 24px; }
+.dash-card { display: flex; flex-direction: column; background: #fff; border: 1px solid #ccc; border-left: 5px solid #1f4e78; border-radius: 6px; padding: 12px 16px; text-decoration: none; color: #222; }
+.dash-card:hover { border-color: #1f4e78; box-shadow: 0 1px 6px rgba(0,0,0,.12); }
+.dash-value { font-size: 32px; font-weight: bold; color: #1f4e78; line-height: 1.1; }
+.dash-label { font-weight: bold; margin-top: 2px; }
+.dash-sub { font-size: 13px; color: #666; margin-top: 2px; }
+.dash-card.tone-ok { border-left-color: #1d9e75; } .dash-card.tone-ok .dash-value { color: #1d9e75; }
+.dash-card.tone-warn { border-left-color: #d9a400; } .dash-card.tone-warn .dash-value { color: #b8860b; }
+.dash-card.tone-bad { border-left-color: #d85a30; } .dash-card.tone-bad .dash-value { color: #d85a30; }
+.chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }
+.chart-box { background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 12px 16px; }
+.chart-box h2 { font-size: 16px; margin: 0 0 10px; }
+.chart-box.wide-chart { grid-column: 1 / -1; }
+.chart-empty { color: #777; font-style: italic; }
+.chart-link { margin: 10px 0 0; font-size: 13px; }
+.chart-key { font-size: 13px; margin: 0 0 8px; }
+.key { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin: 0 4px 0 8px; vertical-align: middle; }
+.bar-row { display: grid; grid-template-columns: 130px 1fr 130px; gap: 8px; align-items: center; margin: 6px 0; font-size: 14px; }
+.bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { display: block; background: #e5e7eb; border-radius: 3px; height: 14px; overflow: hidden; }
+.bar-pair .bar-track { height: 9px; margin: 2px 0; }
+.bar-fill { display: block; height: 100%; border-radius: 3px; }
+.bar-text { font-size: 13px; color: #444; text-align: right; }
+.c-blue { background: #1f6fa5; } .c-grey { background: #9aa5b1; } .c-ok { background: #1d9e75; } .c-warn { background: #d9a400; } .c-bad { background: #d85a30; }
+.line-chart { width: 100%; height: auto; max-height: 260px; }
+.line-grid { stroke: #ccc; stroke-width: 1; }
+.line-path { fill: none; stroke: #1f6fa5; stroke-width: 2.5; }
+.line-dot { fill: #1f6fa5; }
+.line-axis { font-size: 11px; fill: #666; }
+.line-val { font-size: 12px; fill: #222; font-weight: bold; }
+@media (max-width: 520px) { .chart-grid { grid-template-columns: 1fr; } .bar-row { grid-template-columns: 90px 1fr 90px; } }
+@media print { .dash-card, .chart-box { break-inside: avoid; } .chart-grid { grid-template-columns: 1fr 1fr; } }
