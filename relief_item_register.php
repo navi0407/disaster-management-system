@@ -1,5 +1,7 @@
 <?php
 require_once 'config/db.php';
+require_once 'includes/errors.php';
+require_once 'includes/validate.php';
 require_once 'includes/crud.php';
 require_once 'includes/audit.php';
 require_once 'includes/relief_helpers.php';
@@ -28,12 +30,13 @@ function relSummary($d) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach (['item_name', 'description', 'unit', 'min_stock_level'] as $k) $f[$k] = trim($_POST[$k] ?? '');
 
-    if ($f['item_name'] === '') $errors[] = 'Item name is required.';
-    elseif (mb_strlen($f['item_name']) > 100) $errors[] = 'Item name must be 100 characters or less.';
-    if (mb_strlen($f['description']) > 255) $errors[] = 'Description must be 255 characters or less.';
-    if ($f['unit'] === '') $errors[] = 'Unit is required (for example pcs, kg, box).';
-    elseif (mb_strlen($f['unit']) > 20) $errors[] = 'Unit must be 20 characters or less.';
-    if ($f['min_stock_level'] === '' || !ctype_digit($f['min_stock_level'])) $errors[] = 'Minimum stock level must be a whole number, 0 or more.';
+    // Lab 48: shared checks (includes/validate.php)
+    $errors = array_merge($errors, vCollect([
+        vRequired('Item name', $f['item_name']) ?: vMax('Item name', $f['item_name'], 100),
+        vMax('Description', $f['description'], 255),
+        vRequired('Unit (for example pcs, kg, box)', $f['unit']) ?: vMax('Unit', $f['unit'], 20),
+        vWholeNumber('Minimum stock level', $f['min_stock_level'], 0, 1000000),
+    ]));
 
     if (!$errors) {
         $dup = relQuery($conn,
@@ -65,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title><?= $id ? 'Edit Relief Item' : 'Register Relief Item' ?></title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

@@ -1,5 +1,7 @@
 <?php
 require_once 'config/db.php';
+require_once 'includes/errors.php';
+require_once 'includes/validate.php';
 require_once 'includes/crud.php';
 require_once 'includes/audit.php';
 require_once 'includes/resource_helpers.php';
@@ -37,19 +39,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $f['min_stock_level'] = trim($_POST['min_stock_level'] ?? '');
     $f['status'] = $id ? ($_POST['status'] ?? 'Active') : 'Active';
 
-    if ($f['resource_name'] === '') $errors[] = 'Resource name is required.';
-    elseif (mb_strlen($f['resource_name']) > 100) $errors[] = 'Resource name must be 100 characters or less.';
-
-    if ($f['category_id'] === '' || !dbGetById($conn, 'resource_categories', 'category_id', (int) $f['category_id']))
-        $errors[] = 'Please choose a category.';
-
-    if ($f['unit'] === '') $errors[] = 'Unit is required (for example pcs, kg, box).';
-    elseif (mb_strlen($f['unit']) > 20) $errors[] = 'Unit must be 20 characters or less.';
-
-    if ($f['min_stock_level'] === '' || !ctype_digit($f['min_stock_level'])) $errors[] = 'Minimum stock level must be a whole number, 0 or more.';
-    if (mb_strlen($f['storage_location']) > 100) $errors[] = 'Storage location must be 100 characters or less.';
-    if ($f['expiration_date'] !== '' && !resValidDate($f['expiration_date'])) $errors[] = 'Expiration date is not a valid date.';
-    if (!in_array($f['status'], ['Active', 'Inactive'], true)) $errors[] = 'Status must be Active or Inactive.';
+    // Lab 48: shared checks (includes/validate.php)
+    $errors = array_merge($errors, vCollect([
+        vRequired('Resource name', $f['resource_name']) ?: vMax('Resource name', $f['resource_name'], 100),
+        vExists($conn, 'category', 'resource_categories', 'category_id', (int) $f['category_id']),
+        vRequired('Unit (for example pcs, kg, box)', $f['unit']) ?: vMax('Unit', $f['unit'], 20),
+        vWholeNumber('Minimum stock level', $f['min_stock_level'], 0, 1000000),
+        vMax('Storage location', $f['storage_location'], 100),
+        vDate('Expiration date', $f['expiration_date']),
+        vOneOf('Status', $f['status'], ['Active', 'Inactive']),
+    ]));
 
     if (!$errors) {
         $dup = resQuery($conn,
@@ -86,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title><?= $id ? 'Edit Resource' : 'Register Resource' ?></title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= resEsc(resCssPath()) ?>">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

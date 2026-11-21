@@ -1,5 +1,7 @@
 <?php
 require_once 'config/db.php';
+require_once 'includes/errors.php';
+require_once 'includes/validate.php';
 require_once 'includes/crud.php';
 require_once 'includes/audit.php';
 require_once 'includes/relief_helpers.php';
@@ -15,17 +17,18 @@ $items = dbGetAll($conn, 'relief_items', 'item_name');
 $itemIds = array_map(fn($i) => (int) $i['relief_item_id'], $items);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if ($disasterId <= 0) $errors[] = 'Please choose a disaster.';
-    if ($centerId <= 0) $errors[] = 'Please choose an evacuation center.';
+    // Lab 48: shared checks (includes/validate.php)
+    $errors = vCollect([
+        vExists($conn, 'disaster', 'disasters', 'disaster_id', $disasterId),
+        vExists($conn, 'evacuation center', 'evacuation_centers', 'center_id', $centerId),
+    ]);
 
     $lines = [];
     foreach ($qtyInput as $itemId => $v) {
         $v = trim((string) $v);
         if ($v === '') continue;
-        if (!ctype_digit($v) || (int) $v < 1 || (int) $v > 1000000) {
-            $errors[] = 'Quantities must be whole numbers greater than 0.';
-            break;
-        }
+        $qErr = vWholeNumber('Each quantity', $v, 1, 1000000);
+        if ($qErr !== '') { $errors[] = $qErr; break; }
         if (in_array((int) $itemId, $itemIds, true)) $lines[(int) $itemId] = (int) $v;
     }
     if (!$lines && !$errors) $errors[] = 'Enter a quantity for at least one relief item.';
@@ -59,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (Throwable $e) {
             mysqli_rollback($conn);
-            $errors[] = 'Something went wrong. Nothing was changed.';
+            $errors[] = errMessage($e);
         }
     }
 }
@@ -74,7 +77,7 @@ $centers = relQuery($conn, "SELECT center_id, center_name, barangay FROM evacuat
 <head>
     <meta charset="UTF-8">
     <title>Request Relief Distribution</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>
@@ -118,7 +121,7 @@ $centers = relQuery($conn, "SELECT center_id, center_name, barangay FROM evacuat
                 $iid = (int) $i['relief_item_id']; ?>
                 <tr>
                     <td><?= relEsc($i['item_name']) ?> (<?= relEsc($i['unit']) ?>)</td>
-                    <td><?= relStock($conn, $iid) ?></td>
+                    <td><?= relStock($conn, $iid) ?><?php $exp = relExpired($conn, $iid); if ($exp > 0): ?> <small class="stock-out">(<?= $exp ?> expired)</small><?php endif; ?></td>
                     <td><?= relAvailable($conn, $iid) ?></td>
                     <td><input type="number" name="qty[<?= $iid ?>]" min="1" value="<?= relEsc($qtyInput[$iid] ?? '') ?>"></td>
                 </tr>

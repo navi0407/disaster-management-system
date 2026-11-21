@@ -1,5 +1,7 @@
 <?php
 require_once 'config/db.php';
+require_once 'includes/errors.php';
+require_once 'includes/validate.php';
 require_once 'includes/crud.php';
 require_once 'includes/audit.php';
 require_once 'includes/resource_helpers.php';
@@ -13,11 +15,13 @@ $qtyRaw = trim($_POST['quantity'] ?? '');
 $remarks = trim($_POST['remarks'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!in_array($type, ['Receive', 'Release'], true)) $errors[] = 'Please choose Receive or Release.';
-    if ($selected <= 0) $errors[] = 'Please choose a resource.';
-    if ($qtyRaw === '' || !ctype_digit($qtyRaw) || (int) $qtyRaw < 1) $errors[] = 'Quantity must be a whole number greater than 0.';
-    elseif ((int) $qtyRaw > 1000000) $errors[] = 'Quantity is too large.';
-    if (mb_strlen($remarks) > 255) $errors[] = 'Remarks must be 255 characters or less.';
+    // Lab 48: shared checks (includes/validate.php)
+    $errors = vCollect([
+        vOneOf('Transaction type', $type, ['Receive', 'Release']),
+        vExists($conn, 'resource', 'resources', 'resource_id', $selected),
+        vWholeNumber('Quantity', $qtyRaw, 1, 1000000),
+        vMax('Remarks', $remarks, 255),
+    ]);
 
     if (!$errors) {
         $qty = (int) $qtyRaw;
@@ -56,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (Throwable $e) {
             mysqli_rollback($conn);
-            $errors[] = 'Something went wrong. Nothing was changed.';
+            $errors[] = errMessage($e);
         }
     }
 }
@@ -70,7 +74,7 @@ $resources = resQuery($conn,
 <head>
     <meta charset="UTF-8">
     <title>Receive or Release Stock</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= resEsc(resCssPath()) ?>">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

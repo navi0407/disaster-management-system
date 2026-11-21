@@ -1,5 +1,7 @@
 <?php
 require_once 'config/db.php';
+require_once 'includes/errors.php';
+require_once 'includes/validate.php';
 require_once 'includes/crud.php';
 require_once 'includes/audit.php';
 require_once 'includes/resource_helpers.php';
@@ -31,8 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     $formId = (int) ($_POST['category_id'] ?? 0);
     $formName = trim($_POST['category_name'] ?? '');
 
-    if ($formName === '') $errors[] = 'Category name is required.';
-    elseif (mb_strlen($formName) > 50) $errors[] = 'Category name must be 50 characters or less.';
+    $nameError = vRequired('Category name', $formName) ?: vMax('Category name', $formName, 50);   // Lab 48
+    if ($nameError !== '') $errors[] = $nameError;
     else {
         $dup = resQuery($conn,
             "SELECT COUNT(*) AS total FROM resource_categories WHERE LOWER(category_name) = LOWER(?) AND category_id <> ?",
@@ -79,7 +81,7 @@ $rows = resQuery($conn,
 <head>
     <meta charset="UTF-8">
     <title>Resource Categories</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= resEsc(resCssPath()) ?>">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

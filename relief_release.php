@@ -1,5 +1,6 @@
 <?php
 require_once 'config/db.php';
+require_once 'includes/errors.php';
 require_once 'includes/crud.php';
 require_once 'includes/audit.php';
 require_once 'includes/relief_helpers.php';
@@ -70,8 +71,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $dist) {
                 }
                 if ($sum !== (int) $ln['quantity'])
                     $errors[] = $ln['item_name'] . ': you entered ' . $sum . ' but the approved quantity is ' . $ln['quantity'] . ' ' . $ln['unit'] . '.';
-                if (relStock($conn, $iid) < (int) $ln['quantity'])
-                    $errors[] = 'Not enough ' . $ln['item_name'] . ' in stock to release.';
+                if (relUsable($conn, $iid) < (int) $ln['quantity']) {
+                    $expiredLeft = relExpired($conn, $iid);
+                    $errors[] = 'Not enough ' . $ln['item_name'] . ' to release'
+                              . ($expiredLeft > 0 ? ' (' . $expiredLeft . ' ' . $ln['unit'] . ' in stock has expired and cannot be given out).' : '.');
+                }
             }
 
             if (!$errors) {
@@ -104,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $dist) {
         mysqli_rollback($conn);
     } catch (Throwable $e) {
         mysqli_rollback($conn);
-        $errors[] = 'Something went wrong. Nothing was changed.';
+        $errors[] = errMessage($e);
     }
     // reload display data after a failed attempt
     $rows = relQuery($conn,
@@ -114,13 +118,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $dist) {
     $dist = $rows[0] ?? $dist;
     $lines = ($dist && $dist['status'] === 'Approved') ? distRequestedLines($conn, $id) : [];
 }
+if (!$dist) errNotFound('relief request');   // Lab 50: a bad or old link
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Release Relief Items</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

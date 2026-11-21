@@ -1,5 +1,6 @@
 <?php
 require_once 'config/db.php';
+require_once 'includes/errors.php';
 require_once 'includes/crud.php';
 require_once 'includes/audit.php';
 require_once 'includes/relief_helpers.php';
@@ -77,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id > 0 && isset($_POST['action']))
             mysqli_rollback($conn);
         } catch (Throwable $e) {
             mysqli_rollback($conn);
-            $errors[] = 'Something went wrong. Nothing was changed.';
+            $errors[] = errMessage($e);
         }
     }
 }
@@ -102,13 +103,14 @@ if ($id > 0) {
     }
 }
 $doneMessages = ['approved' => 'Request approved. The items are now reserved.', 'rejected' => 'Request rejected.', 'cancelled' => 'Request cancelled.'];
+if (!$dist) errNotFound('relief request');   // Lab 50: a bad or old link
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Review Relief Request</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>
@@ -143,7 +145,7 @@ $doneMessages = ['approved' => 'Request approved. The items are now reserved.', 
         <table class="data-table">
             <thead><tr>
                 <th>Item</th><th>Quantity</th><?php if ($dist['status'] === 'Released'): ?><th>Household</th><th>Signed</th><?php endif; ?>
-                <?php if ($waiting): ?><th>In stock</th><th>Reserved by others</th><th>Available</th><th>Check</th><?php endif; ?>
+                <?php if ($waiting): ?><th>In stock (not expired)</th><th>Reserved by others</th><th>Available</th><th>Check</th><?php endif; ?>
             </tr></thead>
             <tbody>
             <?php foreach ($lines as $ln): ?>
@@ -153,7 +155,7 @@ $doneMessages = ['approved' => 'Request approved. The items are now reserved.', 
                     <?php if ($dist['status'] === 'Released'): ?><td>#<?= (int) $ln['household_id'] ?></td><td class="<?= $ln['signature_on_file'] ? 'ack-yes' : 'ack-no' ?>"><?= $ln['signature_on_file'] ? 'Yes' : 'Not yet' ?></td><?php endif; ?>
                     <?php if ($waiting):
                         $iid = (int) $ln['relief_item_id'];
-                        $stock = relStock($conn, $iid);
+                        $stock = relUsable($conn, $iid); // expired items do not count
                         $res = relReserved($conn, $iid, $id);
                         $avail = $stock - $res;
                         $enough = (int) $ln['quantity'] <= $avail;

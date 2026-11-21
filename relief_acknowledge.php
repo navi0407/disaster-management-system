@@ -1,6 +1,7 @@
 <?php
 // Lab 29: beneficiary acknowledgment. Marks a household's received items as signed for.
 require_once 'config/db.php';
+require_once 'includes/errors.php';
 require_once 'includes/crud.php';
 require_once 'includes/audit.php';
 require_once 'includes/relief_helpers.php';
@@ -42,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $dist && isset($_POST['household_id
             mysqli_commit($conn);
         } catch (Throwable $e) {
             mysqli_rollback($conn);
-            $errors[] = 'Something went wrong. Nothing was changed.';
+            $errors[] = errMessage($e);
         }
     }
 }
@@ -65,13 +66,14 @@ if ($dist) {
         if (!$it['signature_on_file']) $byHousehold[$k]['signed'] = false;
     }
 }
+if (!$dist) errNotFound('distribution record');   // Lab 50: a bad or old link
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Beneficiary Acknowledgment</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

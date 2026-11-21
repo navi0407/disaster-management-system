@@ -118,12 +118,24 @@ function authRedirectToLogin($msg = '') {
     exit;
 }
 
-function authDeny($message) {
+function authDeny($message, $title = 'Not allowed') {
+    // WP17: every blocked attempt is written to the audit trail, so the administrator can see it.
+    try {
+        $conn = $GLOBALS['conn'] ?? null;
+        $u = authUser();
+        if ($conn && $u) {
+            require_once __DIR__ . '/crud.php';
+            require_once __DIR__ . '/audit.php';
+            logAudit($conn, $u['id'], 'Access denied', 'security', null,
+                     $title . ': ' . basename($_SERVER['SCRIPT_NAME'] ?? '') . ' (' . ($_SERVER['REQUEST_METHOD'] ?? '') . ')', null);
+        }
+    } catch (Throwable $e) { /* never let logging stop the message */ }
+    while (ob_get_level() > 0) @ob_end_clean();
     http_response_code(403);
-    echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Not allowed</title>'
+    echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' . authEsc($title) . '</title>'
        . '<link rel="stylesheet" href="' . authEsc(authCssPath()) . '"></head><body><main>'
-       . '<h1>Not allowed</h1><div class="error-box">' . authEsc($message) . '</div>'
-       . '<p><a href="index.php">Back to home</a></p></main></body></html>';
+       . '<h1>' . authEsc($title) . '</h1><div class="error-box">' . authEsc($message) . '</div>'
+       . '<p><a href="index.php">Back to home</a> | <a href="javascript:history.back()">Go back</a></p></main></body></html>';
     exit;
 }
 
@@ -136,6 +148,19 @@ function authCsrfToken() {
 function authCsrfField() { return '<input type="hidden" name="csrf" value="' . authCsrfToken() . '">'; }
 function authCsrfOk() {
     return isset($_POST['csrf'], $_SESSION['csrf']) && hash_equals($_SESSION['csrf'], (string) $_POST['csrf']);
+}
+
+// WP17: put the CSRF token into EVERY form that posts, so no page can forget it.
+// The page is built as normal, then this runs once on the finished HTML and adds the hidden field
+// right after each <form method="post">. The guard below then refuses any POST without the token.
+function authCsrfInject($html) {
+    if (stripos($html, '<form') === false) return $html;
+    foreach (headers_list() as $h) {                       // leave downloads and other non-HTML alone
+        if (stripos($h, 'content-type:') === 0 && stripos($h, 'text/html') === false) return $html;
+    }
+    $field = authCsrfField();
+    $out = preg_replace('~<form\b[^>]*\bmethod\s*=\s*["\']?post["\']?[^>]*>~i', '$0' . $field, $html);
+    return $out ?? $html;
 }
 
 // ---------- The guard: runs at the top of every page ----------
@@ -170,4 +195,9 @@ function authGuard($conn) {
     if ($level === '') authDeny('Your role (' . $GLOBALS['AUTH_USER']['role'] . ') cannot open this page.');
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && $level !== 'rw')
         authDeny('Your role (' . $GLOBALS['AUTH_USER']['role'] . ') can look at this page but cannot change anything on it.');
+
+    // WP17: every form that changes data must carry the session's token.
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !authCsrfOk())
+        authDeny('This form has expired or did not come from this site. Go back, reload the page and send the form again.', 'Form expired');
+    ob_start('authCsrfInject');
 }

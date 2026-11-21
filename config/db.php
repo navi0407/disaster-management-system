@@ -1,4 +1,7 @@
 <?php
+// define('ERR_DEBUG', true);   // remove the two slashes ONLY while you are fixing a bug
+require_once __DIR__ . '/../includes/errors.php';
+
 // Database connection settings
 // Default XAMPP MySQL credentials — change these later once you set a real password
 $host   = "localhost";

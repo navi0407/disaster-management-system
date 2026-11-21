@@ -1,6 +1,7 @@
 <?php
 // Lab 38: user and role management. Admin only (the guard in includes/auth.php enforces it).
 require_once 'config/db.php';
+require_once 'includes/errors.php';
 require_once 'includes/crud.php';
 require_once 'includes/audit.php';
 $me = authUser();
@@ -60,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 mysqli_rollback($conn);
             } catch (Throwable $e) {
                 mysqli_rollback($conn);
-                $errors[] = 'Something went wrong. Nothing was changed.';
+                $errors[] = errMessage($e);
             }
         }
     } elseif ($action === 'reset') {
@@ -89,7 +90,7 @@ $doneMsg = ['added' => 'User created.', 'updated' => 'User updated.', 'reset' =>
 <head>
     <meta charset="UTF-8">
     <title>Users</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= authEsc(authCssPath()) ?>">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

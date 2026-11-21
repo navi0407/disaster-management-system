@@ -1,5 +1,7 @@
 <?php
 require_once 'config/db.php';
+require_once 'includes/errors.php';
+require_once 'includes/validate.php';
 require_once 'includes/crud.php';
 require_once 'includes/audit.php';
 require_once 'includes/relief_helpers.php';
@@ -14,18 +16,18 @@ $dateReceived = trim($_POST['date_received'] ?? date('Y-m-d'));
 $expiration = trim($_POST['expiration_date'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if ($selected <= 0) $errors[] = 'Please choose a relief item.';
-    if ($source === '') $errors[] = 'Source is required (who gave or delivered it).';
-    elseif (mb_strlen($source) > 100) $errors[] = 'Source must be 100 characters or less.';
-    if ($qtyRaw === '' || !ctype_digit($qtyRaw) || (int) $qtyRaw < 1) $errors[] = 'Quantity must be a whole number greater than 0.';
-    elseif ((int) $qtyRaw > 1000000) $errors[] = 'Quantity is too large.';
-
-    if (!relValidDate($dateReceived)) $errors[] = 'Date received is not a valid date.';
-    elseif ($dateReceived > date('Y-m-d')) $errors[] = 'Date received cannot be in the future.';
-
-    if ($expiration !== '') {
-        if (!relValidDate($expiration)) $errors[] = 'Expiration date is not a valid date.';
-        elseif (relValidDate($dateReceived) && $expiration <= $dateReceived) $errors[] = 'Expiration date must be after the date received.';
+    // Lab 48: the shared checks from includes/validate.php
+    $errors = vCollect([
+        $selected <= 0 ? 'Please choose a relief item.' : '',
+        vRequired('Source (who gave or delivered it)', $source) ?: vMax('Source', $source, 100),
+        vWholeNumber('Quantity', $qtyRaw, 1, 1000000),
+        vDate('Date received', $dateReceived, true) ?: vNotFuture('Date received', $dateReceived),
+        vDate('Expiration date', $expiration),
+    ]);
+    if (!$errors && $expiration !== '') {
+        if ($expiration <= $dateReceived) $errors[] = 'Expiration date must be after the date received.';
+        // Rule 10: do not accept stock that is already expired, it could never be given out.
+        elseif ($expiration < date('Y-m-d')) $errors[] = 'That item has already expired, so it cannot be received into stock.';
     }
 
     if (!$errors) {
@@ -53,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (Throwable $e) {
             mysqli_rollback($conn);
-            $errors[] = 'Something went wrong. Nothing was changed.';
+            $errors[] = errMessage($e);
         }
     }
 }
@@ -65,7 +67,7 @@ $items = dbGetAll($conn, 'relief_items', 'item_name');
 <head>
     <meta charset="UTF-8">
     <title>Record Relief Receipt</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

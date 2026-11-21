@@ -37,6 +37,26 @@ function relStock($conn, $itemId) {
     return (int) $rows[0]['stock'];
 }
 
+// WP17 (rule 10): expired items cannot be given out.
+// Stock is not tracked per delivery, so we assume the oldest items leave first (first in, first out).
+// So the quantity still sitting on the shelf that has expired is:
+//   everything received that already expired, minus everything already given out (never below 0).
+function relExpired($conn, $itemId) {
+    $rows = relQuery($conn,
+        "SELECT
+            COALESCE((SELECT SUM(quantity) FROM relief_receipts
+                      WHERE relief_item_id = ? AND expiration_date IS NOT NULL AND expiration_date < CURDATE()), 0) -
+            COALESCE((SELECT SUM(quantity) FROM distribution_items
+                      WHERE relief_item_id = ? AND date_given IS NOT NULL), 0) AS expired_left",
+        'ii', [$itemId, $itemId]);
+    return max(0, (int) $rows[0]['expired_left']);
+}
+
+// Stock that is allowed to be given out: physical stock minus expired stock.
+function relUsable($conn, $itemId) {
+    return relStock($conn, $itemId) - relExpired($conn, $itemId);
+}
+
 // Out of Stock at 0, Low Stock at or below the minimum, otherwise In Stock.
 function relStockLevel($qty, $min) {
     $qty = (int) $qty;
@@ -78,9 +98,9 @@ function relReserved($conn, $itemId, $excludeDistId = 0) {
     return (int) $rows[0]['total'];
 }
 
-// What is really free to promise: in stock minus what is already reserved.
+// What is really free to promise: usable (not expired) stock minus what is already reserved.
 function relAvailable($conn, $itemId, $excludeDistId = 0) {
-    return relStock($conn, $itemId) - relReserved($conn, $itemId, $excludeDistId);
+    return relUsable($conn, $itemId) - relReserved($conn, $itemId, $excludeDistId);
 }
 
 // RDR-2026-0001, RDR-2026-0002, ... (relief distribution request numbers)
