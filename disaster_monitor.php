@@ -8,24 +8,38 @@ require_once 'includes/status_rules.php';
 $currentUserId = $_SESSION['user_id'] ?? 1; // placeholder until Lab 37 (login) exists
 
 // Handle a status change (Lab 6)
+$errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['disaster_id'], $_POST['new_status'])) {
     $id = (int) $_POST['disaster_id'];
     $current = dbGetById($conn, 'disasters', 'disaster_id', $id);
 
-    if ($current && !isStatusLocked('disasters', $current['status'])) {
+    if (!$current) {
+        $errors[] = 'That disaster does not exist. It may have been removed.';
+    } elseif (isStatusLocked('disasters', $current['status'])) {
+        // Lab 49 rule 12: a Closed disaster is locked. Only an administrator could change it, and even then not through this list.
+        $errors[] = $current['disaster_number'] . ' is Closed and locked, so its status cannot be changed.';
+    } else {
         $allowed = getNextAllowedStatuses('disasters', $current['status']);
-        if (in_array($_POST['new_status'], $allowed, true)) {
-            $updateData = ['status' => $_POST['new_status']];
-            if ($_POST['new_status'] === 'Closed') {
-                $updateData['date_closed'] = date('Y-m-d H:i:s');
+        if (!in_array($_POST['new_status'], $allowed, true)) {
+            // Lab 6: restrict invalid transitions, and now tell the user why nothing happened
+            $errors[] = 'A disaster can only stay as it is or move one step forward. "' . $current['status']
+                      . '" cannot jump to "' . $_POST['new_status'] . '".';
+        } else {
+            try {
+                $updateData = ['status' => $_POST['new_status']];
+                if ($_POST['new_status'] === 'Closed') $updateData['date_closed'] = date('Y-m-d H:i:s');
+                mysqli_begin_transaction($conn);
+                dbUpdate($conn, 'disasters', 'disaster_id', $id, $updateData);
+                logAudit($conn, $currentUserId, 'Changed disaster status', 'disasters', $current['status'], $_POST['new_status'], $current['disaster_number']);
+                mysqli_commit($conn);
+                header('Location: disaster_monitor.php');
+                exit;
+            } catch (Throwable $e) {
+                mysqli_rollback($conn);
+                $errors[] = errMessage($e);
             }
-            dbUpdate($conn, 'disasters', 'disaster_id', $id, $updateData);
-            logAudit($conn, $currentUserId, 'Changed disaster status', 'disasters', $current['status'], $_POST['new_status'], $current['disaster_number']);
         }
-        // Silently ignore attempts to jump to a non-adjacent status (Lab 6: "restrict invalid transitions")
     }
-    header('Location: disaster_monitor.php');
-    exit;
 }
 
 // Search and filter (Lab 7)
@@ -75,13 +89,15 @@ $allTypes = dbGetAll($conn, 'disaster_types', 'type_name');
 <head>
     <meta charset="UTF-8">
     <title>Disaster Monitoring</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars(authCssPath()) ?>">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>
 
 <main>
     <h1>Disaster Monitoring</h1>
+
+    <?php foreach ($errors as $err): ?><div class="error-box"><?= htmlspecialchars($err) ?></div><?php endforeach; ?>
 
     <?php if (isset($_GET['registered'])): ?>
         <div class="success-box">Disaster <?= htmlspecialchars($_GET['registered']) ?> registered successfully.</div>

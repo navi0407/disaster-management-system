@@ -57,7 +57,8 @@ function authPermissions() {
 // Special actions that need more than page access.
 // Approving is kept away from the Distribution Officer on purpose: they only process what is already approved.
 function authCapabilities() {
-    return ['approve' => ['administrator', 'relief officer']];
+    return ['approve' => ['administrator', 'relief officer'],
+            'override_capacity' => ['administrator']];   // WP17 rule 5: only an administrator may go over a center's capacity
 }
 
 // Which module a page belongs to, by the start of its file name. First match wins.

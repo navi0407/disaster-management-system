@@ -1,104 +1,129 @@
 <?php
 require_once 'config/db.php';
+require_once 'includes/validate.php';
 require_once 'includes/crud.php';
 require_once 'includes/audit.php';
+require_once 'includes/evacuation_helpers.php';
 
-$currentUserId = $_SESSION['user_id'] ?? 1; // placeholder until Lab 37 (login) exists
+$currentUserId = $_SESSION['user_id'] ?? 1;
 
-$editId = isset($_GET['edit']) ? (int) $_GET['edit'] : null;
+$editId = isset($_GET['edit']) ? (int) $_GET['edit'] : 0;
 $editing = $editId ? dbGetById($conn, 'evacuation_centers', 'center_id', $editId) : null;
 
 $errors = [];
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (empty($_POST['center_name'])) $errors[] = 'Center name is required.';
-    if (empty($_POST['location'])) $errors[] = 'Location is required.';
-    if (empty($_POST['barangay'])) $errors[] = 'Barangay is required.';
-    if (!isset($_POST['capacity']) || (int) $_POST['capacity'] < 1) $errors[] = 'Capacity must be at least 1.';
+if ($editId && !$editing) $errors[] = 'That evacuation center does not exist. It may have been removed.';
 
-    // Business rule: capacity can't be set lower than the people already inside
-    if (!empty($_POST['center_id'])) {
-        $existing = dbGetById($conn, 'evacuation_centers', 'center_id', (int) $_POST['center_id']);
-        if ($existing && (int) $_POST['capacity'] < (int) $existing['current_occupancy']) {
-            $errors[] = 'Capacity cannot be lower than the current occupancy (' . (int) $existing['current_occupancy'] . ').';
-        }
+$fields = ['center_name', 'location', 'barangay', 'contact_person', 'contact_number', 'capacity', 'facilities'];
+$f = [];
+foreach ($fields as $k) $f[$k] = trim($_POST[$k] ?? $editing[$k] ?? '');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $postId = (int) ($_POST['center_id'] ?? 0);
+    $existing = $postId ? dbGetById($conn, 'evacuation_centers', 'center_id', $postId) : null;
+    if ($postId && !$existing) $errors[] = 'That evacuation center does not exist. It may have been removed.';
+
+    // Lab 48: shared checks
+    $errors = array_merge($errors, vCollect([
+        vRequired('Center name', $f['center_name']) ?: vMax('Center name', $f['center_name'], 100),
+        vRequired('Location', $f['location']) ?: vMax('Location', $f['location'], 150),
+        vRequired('Barangay', $f['barangay']) ?: vMax('Barangay', $f['barangay'], 100),
+        vMax('Contact person', $f['contact_person'], 100),
+        vPhone('Contact number', $f['contact_number']),
+        vWholeNumber('Capacity', $f['capacity'], 1, 100000),
+        vMax('Facilities', $f['facilities'], 255),
+    ]));
+
+    // Business rule: capacity can't be set lower than the people really inside (counted, not the saved number)
+    if (!$errors && $existing) {
+        $inside = countCheckedIn($conn, $postId);
+        if ((int) $f['capacity'] < $inside)
+            $errors[] = 'Capacity cannot be lower than the number of people inside right now (' . $inside . ').';
     }
 
-    if (empty($errors)) {
-        $data = [
-            'center_name'    => $_POST['center_name'],
-            'location'       => $_POST['location'],
-            'barangay'       => $_POST['barangay'],
-            'contact_person' => $_POST['contact_person'],
-            'contact_number' => $_POST['contact_number'],
-            'capacity'       => (int) $_POST['capacity'],
-            'facilities'     => $_POST['facilities'],
-        ];
+    // Lab 50: duplicate records. Same center name in the same barangay.
+    if (!$errors) {
+        $dup = dbQueryAll($conn,
+            "SELECT center_id FROM evacuation_centers WHERE LOWER(center_name) = LOWER(?) AND LOWER(barangay) = LOWER(?) AND center_id <> ? LIMIT 1",
+            'ssi', [$f['center_name'], $f['barangay'], $postId]);
+        if ($dup) $errors[] = 'An evacuation center with that name already exists in this barangay.';
+    }
 
-        if (!empty($_POST['center_id'])) {
-            $centerId = (int) $_POST['center_id'];
-            dbUpdate($conn, 'evacuation_centers', 'center_id', $centerId, $data);
-            logAudit($conn, $currentUserId, 'Updated evacuation center', 'evacuation_centers', null, $_POST['center_name']);
-            header('Location: evacuation_center_monitor.php?updated=' . $centerId);
-        } else {
-            $data['current_occupancy'] = 0; // nobody has checked in yet
-            $data['status'] = 'Active';
-            $newId = dbInsert($conn, 'evacuation_centers', $data);
-            logAudit($conn, $currentUserId, 'Registered evacuation center', 'evacuation_centers', null, $_POST['center_name']);
-            header('Location: evacuation_center_monitor.php?registered=' . $newId);
+    if (!$errors) {
+        $data = [
+            'center_name'    => $f['center_name'],
+            'location'       => $f['location'],
+            'barangay'       => $f['barangay'],
+            'contact_person' => $f['contact_person'],
+            'contact_number' => $f['contact_number'],
+            'capacity'       => (int) $f['capacity'],
+            'facilities'     => $f['facilities'],
+        ];
+        try {
+            mysqli_begin_transaction($conn);
+            if ($existing) {
+                dbUpdate($conn, 'evacuation_centers', 'center_id', $postId, $data);
+                logAudit($conn, $currentUserId, 'Updated evacuation center', 'evacuation_centers', null, $f['center_name']);
+                $go = 'evacuation_center_monitor.php?updated=' . $postId;
+            } else {
+                $data['current_occupancy'] = 0; // nobody has checked in yet
+                $data['status'] = 'Active';
+                $newId = dbInsert($conn, 'evacuation_centers', $data);
+                logAudit($conn, $currentUserId, 'Registered evacuation center', 'evacuation_centers', null, $f['center_name']);
+                $go = 'evacuation_center_monitor.php?registered=' . $newId;
+            }
+            mysqli_commit($conn);
+            header('Location: ' . $go);
+            exit;
+        } catch (Throwable $e) {
+            mysqli_rollback($conn);
+            $errors[] = errMessage($e);
         }
-        exit;
     }
 }
-
-// Pre-fill from the database when editing, from a failed submission otherwise, or leave blank
-$f = fn($field, $default = '') => htmlspecialchars($_POST[$field] ?? $editing[$field] ?? $default);
+$isEdit = $editing || !empty($_POST['center_id']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title><?= $editing ? 'Edit Evacuation Center' : 'Register Evacuation Center' ?></title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <title><?= $isEdit ? 'Edit Evacuation Center' : 'Register Evacuation Center' ?></title>
+    <link rel="stylesheet" href="<?= errEsc(authCssPath()) ?>">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>
 
 <main>
-    <h1><?= $editing ? 'Edit Evacuation Center' : 'Register an Evacuation Center' ?></h1>
+    <h1><?= $isEdit ? 'Edit Evacuation Center' : 'Register an Evacuation Center' ?></h1>
 
-    <?php if ($errors): ?>
-        <div class="error-box">
-            <?php foreach ($errors as $e): ?><p><?= htmlspecialchars($e) ?></p><?php endforeach; ?>
-        </div>
-    <?php endif; ?>
+    <?php foreach ($errors as $err): ?><div class="error-box"><?= errEsc($err) ?></div><?php endforeach; ?>
 
     <form method="post">
-        <?php if ($editing): ?>
-            <input type="hidden" name="center_id" value="<?= $editing['center_id'] ?>">
+        <?php if ($isEdit): ?>
+            <input type="hidden" name="center_id" value="<?= (int) ($editing['center_id'] ?? $_POST['center_id'] ?? 0) ?>">
         <?php endif; ?>
 
         <label>Center Name</label>
-        <input type="text" name="center_name" value="<?= $f('center_name') ?>" placeholder="e.g. Bayombong Central School Gym" required>
+        <input type="text" name="center_name" maxlength="100" value="<?= errEsc($f['center_name']) ?>" placeholder="e.g. Bayombong Central School Gym">
 
         <label>Location</label>
-        <input type="text" name="location" value="<?= $f('location') ?>" placeholder="Specific address or landmark" required>
+        <input type="text" name="location" maxlength="150" value="<?= errEsc($f['location']) ?>" placeholder="Specific address or landmark">
 
         <label>Barangay</label>
-        <input type="text" name="barangay" value="<?= $f('barangay') ?>" required>
+        <input type="text" name="barangay" maxlength="100" value="<?= errEsc($f['barangay']) ?>">
 
         <label>Contact Person</label>
-        <input type="text" name="contact_person" value="<?= $f('contact_person') ?>">
+        <input type="text" name="contact_person" maxlength="100" value="<?= errEsc($f['contact_person']) ?>">
 
         <label>Contact Number</label>
-        <input type="text" name="contact_number" value="<?= $f('contact_number') ?>">
+        <input type="text" name="contact_number" maxlength="20" value="<?= errEsc($f['contact_number']) ?>" placeholder="e.g. 09171234567">
 
         <label>Capacity (max number of evacuees)</label>
-        <input type="number" name="capacity" min="1" value="<?= $f('capacity') ?>" required>
+        <input type="number" name="capacity" min="1" max="100000" value="<?= errEsc($f['capacity']) ?>">
 
         <label>Facilities</label>
-        <input type="text" name="facilities" value="<?= $f('facilities') ?>" placeholder="e.g. Water, toilets, medical area">
+        <input type="text" name="facilities" maxlength="255" value="<?= errEsc($f['facilities']) ?>" placeholder="e.g. Water, toilets, medical area">
 
-        <button type="submit"><?= $editing ? 'Save Changes' : 'Register Center' ?></button>
+        <button type="submit"><?= $isEdit ? 'Save Changes' : 'Register Center' ?></button>
     </form>
 </main>
 
