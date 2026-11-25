@@ -2,58 +2,121 @@
    Loaded after style.css and app_extra.css, so these override the old navy and orange.
    Palette: primary #8C1D2A, brand red #A93239, dark maroon #560612, charcoal #2F3032, gray #7E8085, background #F6F4F4. */
 :root {
-    --blue: #a93239;        /* primary: buttons, table header line */
-    --blue-dark: #8c2830;   /* button hover */
-    --accent: #a93239;      /* brand red accents */
-    --link: #a93239;
-    --bg: #f6f4f4;
-    --border: #d9dadc;
-    --text: #2f3032;
-    --muted: #6b6d70;
-    --red: #d92d20;         /* danger only, so it stays different from the brand red */
+  --blue: #8c1d2a; /* primary: buttons, table header line */
+  --blue-dark: #6f1520; /* button hover */
+  --accent: #a93239; /* brand red accents */
+  --link: #8c1d2a;
+  --bg: #f6f4f4;
+  --border: #d9dadc;
+  --text: #2f3032;
+  --muted: #6b6d70;
+  --red: #d92d20; /* danger only, so it stays different from the brand red */
 }
-body { color: var(--text); }
-input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(140, 29, 42, .15); }
+body {
+  color: var(--text);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  box-shadow: 0 0 0 3px rgba(140, 29, 42, 0.15);
+}
 
 /* Tables */
-.data-table th { background: #f3eaea; color: #560612; border-bottom-color: #8c1d2a; }
-.data-table th, .data-table td { border-color: #e6e1e1; }
-.data-table tbody tr:nth-child(even) { background: #faf7f7; }
-.data-table tbody tr:hover { background: #f7e9ea; }
+.data-table th {
+  background: #f3eaea;
+  color: #560612;
+  border-bottom-color: #8c1d2a;
+}
+.data-table th,
+.data-table td {
+  border-color: #e6e1e1;
+}
+.data-table tbody tr:nth-child(even) {
+  background: #faf7f7;
+}
+.data-table tbody tr:hover {
+  background: #f7e9ea;
+}
 
 /* Messages */
-.error-box { background: #fdecea; color: #9b1c13; border-color: #d92d20; }
+.error-box {
+  background: #fdecea;
+  color: #9b1c13;
+  border-color: #d92d20;
+}
 
 /* Danger colors (real problems) use the bright red, not the brand red */
-.status-rejected, .ack-no, .check-fail { color: #d92d20; }
-.dash-card.tone-bad { border-left-color: #d92d20; } .dash-card.tone-bad .dash-value { color: #d92d20; }
-.c-bad { background: #d92d20; }
+.status-rejected,
+.ack-no,
+.check-fail {
+  color: #d92d20;
+}
+.dash-card.tone-bad {
+  border-left-color: #d92d20;
+}
+.dash-card.tone-bad .dash-value {
+  color: #d92d20;
+}
+.c-bad {
+  background: #d92d20;
+}
 
-/* Dashboard and reports: ONE color only (the brand red). Numbers are charcoal.
-   Scoped to main.dashboard so other pages keep their normal look. */
-.kpi, .dash-card { border-left-color: #a93239; }
-.kpi-value, .dash-value, .report-card strong { color: #2f3032; }
-.report-card:hover { border-color: #a93239; }
-main.dashboard .dash-card, main.dashboard .dash-card.tone-ok, main.dashboard .dash-card.tone-warn, main.dashboard .dash-card.tone-bad { border-left-color: #a93239; }
-main.dashboard .dash-card .dash-value, main.dashboard .dash-card.tone-ok .dash-value, main.dashboard .dash-card.tone-warn .dash-value, main.dashboard .dash-card.tone-bad .dash-value { color: #2f3032; }
-main.dashboard .bar-fill, main.dashboard .c-blue, main.dashboard .c-ok, main.dashboard .c-warn, main.dashboard .c-bad { background: #a93239; }
-main.dashboard .c-grey { background: #e3b5b8; }   /* light shade of the red for "received" bars */
-main.dashboard .line-path { stroke: #a93239; } main.dashboard .line-dot { fill: #a93239; }
-.line-path { stroke: #a93239; } .line-dot { fill: #a93239; }
 
 /* Side navigation: light, so the logo shows in full */
-.sidebar { background: #fff; color: var(--text); border-right-color: #a93239; }
-.side-brand { border-bottom-color: #e6e6e8; }
-.side-brand-name { color: #560612; }
-.side-group { color: #7e8085; }
-.side-nav a { color: #2f3032; }
-.side-nav a:hover { background: #f7e9ea; }
-.side-nav a.active { background: #f7e9ea; border-left-color: #a93239; color: #560612; }
-.side-user { background: #faf6f6; border-top-color: #e6e6e8; }
-.side-avatar { background: #a93239; color: #fff; }
-.side-user-text strong { color: #2f3032; }
-.side-user-text small { color: #7e8085; }
-.side-user-links a { color: #8c1d2a; }
-.topbar { background: #fff; color: #560612; border-bottom-color: #a93239; }
-.menu-btn { background: #f7e9ea; color: #560612; }
-@media (max-width: 900px) { .sidebar.open { box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .35); } }
+.sidebar {
+  background: #fff;
+  color: var(--text);
+  border-right-color: #a93239;
+}
+.side-brand {
+  border-bottom-color: #e6e6e8;
+}
+.side-brand-name {
+  color: #560612;
+}
+.side-group {
+  color: #7e8085;
+}
+.side-nav a {
+  color: #2f3032;
+}
+.side-nav a:hover {
+  background: #f7e9ea;
+}
+.side-nav a.active {
+  background: #f7e9ea;
+  border-left-color: #a93239;
+  color: #560612;
+}
+.side-user {
+  background: #faf6f6;
+  border-top-color: #e6e6e8;
+}
+.side-avatar {
+  background: #a93239;
+  color: #fff;
+}
+.side-user-text strong {
+  color: #2f3032;
+}
+.side-user-text small {
+  color: #7e8085;
+}
+.side-user-links a {
+  color: #8c1d2a;
+}
+.topbar {
+  background: #fff;
+  color: #560612;
+  border-bottom-color: #a93239;
+}
+.menu-btn {
+  background: #f7e9ea;
+  color: #560612;
+}
+@media (max-width: 900px) {
+  .sidebar.open {
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.35);
+  }
+}
