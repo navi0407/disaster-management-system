@@ -101,7 +101,7 @@ $households = mysqli_fetch_all(mysqli_stmt_get_result($stmt), MYSQLI_ASSOC);
                                 <form method="post" class="inline-form">
                                     <input type="hidden" name="household_id" value="<?= $h['household_id'] ?>">
                                     <select name="head_resident_id">
-                                        <option value="">-- None --</option>
+                                        <option value=""> None </option>
                                         <?php foreach ($householdMembers as $m): ?>
                                             <option value="<?= $m['resident_id'] ?>" <?= $h['head_resident_id'] == $m['resident_id'] ? 'selected' : '' ?>>
                                                 <?= htmlspecialchars($m['first_name'] . ' ' . $m['last_name']) ?>
