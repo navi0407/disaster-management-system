@@ -138,6 +138,8 @@ function rptPage($cfg) {
     <meta charset="UTF-8">
     <title><?= rptEsc($cfg['title']) ?></title>
     <link rel="stylesheet" href="<?= rptEsc(rptCssPath()) ?>">
+    <link rel="stylesheet" href="fonts.css?v=8">
+    <link rel="stylesheet" href="theme.css?v=8">
 </head>
 <body>
 <?php include __DIR__ . '/header.php'; ?>

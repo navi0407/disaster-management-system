@@ -16,6 +16,8 @@ $reports = [
     <meta charset="UTF-8">
     <title>Reports</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="fonts.css?v=8">
+    <link rel="stylesheet" href="theme.css?v=8">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

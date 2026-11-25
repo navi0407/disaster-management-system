@@ -1,4 +1,6 @@
-<link rel="stylesheet" href="app_extra.css?v=5">
+<link rel="stylesheet" href="fonts.css?v=10">
+<link rel="stylesheet" href="app_extra.css?v=10">
+<link rel="stylesheet" href="theme.css?v=10">
 <link rel="icon" type="image/png" href="logo.png">
 <?php
 // Side navigation. Each link lists the page-name prefixes that belong to it, so the right link lights up
