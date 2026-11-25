@@ -59,8 +59,17 @@ textarea:focus {
   color: var(--primary);
 }
 .report-card:hover,
-.dash-card:hover {
+.dash-grid .dash-card:hover {
   border-color: var(--primary);
+}
+.dash-grid .dash-card:hover {
+  background: var(--primary);
+  color: #fff;
+}
+.dash-grid .dash-card:hover .dash-value,
+.dash-grid .dash-card:hover .dash-label,
+.dash-grid .dash-card:hover .dash-sub {
+  color: #fff;
 }
 .dash-card.tone-ok,
 .dash-card.tone-warn,
@@ -68,9 +77,6 @@ textarea:focus {
   border-left-color: #d9dadc;
 }
 .dash-grid .dash-card .dash-value {
-  color: var(--primary);
-}
-.dash-grid .dash-card:hover .dash-value {
   color: var(--primary);
 }
 .chart-grid .bar-track {
