@@ -130,22 +130,22 @@
   margin-top: 2px;
 }
 .dash-card.tone-ok {
-  border-left-color: #1d9e75;
+  border-left-color: var(--green);
 }
 .dash-card.tone-ok .dash-value {
-  color: #1d9e75;
+  color: var(--green);
 }
 .dash-card.tone-warn {
-  border-left-color: #d9a400;
+  border-left-color: var(--amber);
 }
 .dash-card.tone-warn .dash-value {
-  color: #b8860b;
+  color: var(--amber);
 }
 .dash-card.tone-bad {
-  border-left-color: #d85a30;
+  border-left-color: var(--red);
 }
 .dash-card.tone-bad .dash-value {
-  color: #d85a30;
+  color: var(--red);
 }
 .chart-grid {
   display: grid;
@@ -226,13 +226,13 @@
   background: #9aa5b1;
 }
 .c-ok {
-  background: #1d9e75;
+  background: var(--green);
 }
 .c-warn {
-  background: #d9a400;
+  background: var(--amber);
 }
 .c-bad {
-  background: #d85a30;
+  background: var(--red);
 }
 .line-chart {
   width: 100%;
@@ -296,7 +296,7 @@ body.has-sidebar {
   flex-direction: column;
   background: var(--blue, #22384d);
   color: #fff;
-  border-right: 4px solid var(--accent, #d9622b);
+  border-right: 4px solid var(--accent, #8c1d2a);
 }
 .side-brand {
   display: flex;
@@ -351,7 +351,7 @@ body.has-sidebar {
 }
 .side-nav a.active {
   background: rgba(255, 255, 255, 0.2);
-  border-left-color: var(--accent, #d9622b);
+  border-left-color: var(--accent, #8c1d2a);
   font-weight: 700;
 }
 .side-user {
@@ -369,7 +369,7 @@ body.has-sidebar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--accent, #d9622b);
+  background: var(--accent, #8c1d2a);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -422,7 +422,7 @@ body.has-sidebar {
     background: var(--blue, #22384d);
     color: #fff;
     padding: 8px 14px;
-    border-bottom: 3px solid var(--accent, #d9622b);
+    border-bottom: 3px solid var(--accent, #8c1d2a);
   }
   .menu-btn {
     background: rgba(255, 255, 255, 0.15);

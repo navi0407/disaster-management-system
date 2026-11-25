@@ -49,7 +49,7 @@ if ($selectedId !== '') {
 
     <form method="get" class="filter-bar">
         <select name="disaster_id" onchange="this.form.submit()">
-            <option value="">-- Select a disaster --</option>
+            <option value=""> Select a disaster </option>
             <?php foreach ($disasters as $d): ?>
                 <option value="<?= $d['disaster_id'] ?>" <?= $selectedId == $d['disaster_id'] ? 'selected' : '' ?>>
                     <?= htmlspecialchars($d['disaster_number'] . ' — ' . $d['disaster_name'] . ' (' . $d['area_affected'] . ')') ?>

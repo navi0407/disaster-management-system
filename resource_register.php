@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <label>Category
             <select name="category_id">
-                <option value="">-- choose --</option>
+                <option value=""> choose </option>
                 <?php foreach ($categories as $c): ?>
                     <option value="<?= (int) $c['category_id'] ?>" <?= (string) $f['category_id'] === (string) $c['category_id'] ? 'selected' : '' ?>><?= resEsc($c['category_name']) ?></option>
                 <?php endforeach; ?>

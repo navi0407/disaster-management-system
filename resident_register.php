@@ -116,7 +116,7 @@ $isEdit = $editing || (!empty($_POST['resident_id']));
 
         <label>Household</label>
         <select name="household_id">
-            <option value="">-- Select household --</option>
+            <option value=""> Select household </option>
             <?php foreach ($households as $h): ?>
                 <option value="<?= (int) $h['household_id'] ?>" <?= (string) $f['household_id'] === (string) $h['household_id'] ? 'selected' : '' ?>>
                     #<?= (int) $h['household_id'] ?> &mdash; <?= errEsc($h['barangay']) ?>, <?= errEsc($h['address']) ?>

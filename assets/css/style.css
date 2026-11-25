@@ -2,15 +2,15 @@
 :root {
     --blue: #22384d;
     --blue-dark: #162736;
-    --accent: #d9622b;
+    --accent: #8c1d2a;
     --link: #2a6f97;
     --bg: #f5f6f7;
     --border: #d5dbe1;
     --text: #222;
     --muted: #666;
-    --green: #1d9e75;
-    --amber: #b8860b;
-    --red: #d85a30;
+    --green: var(--accent);
+    --amber: var(--accent);
+    --red: var(--accent);
 }
 * { box-sizing: border-box; }
 body {
@@ -120,21 +120,21 @@ button:hover, input[type="submit"]:hover { background: var(--blue-dark); }
 .status-error { color: var(--red); font-weight: bold; }
 
 /* ===== Status colors ===== */
-.status-reported { color: #555; }
+.status-reported { color: var(--accent); }
 .status-monitoring { color: var(--amber); }
 .status-active { color: var(--red); font-weight: bold; }
 .status-response { color: var(--red); font-weight: bold; }
 .status-recovery { color: var(--link); }
 .status-closed { color: var(--green); }
-.status-inactive { color: #999; }
+.status-inactive { color: var(--accent); }
 .status-checked-in { color: var(--link); font-weight: bold; }
-.status-checked-out { color: #999; }
+.status-checked-out { color: var(--accent); }
 
 /* ===== Evacuation centers ===== */
 .occupancy-bar { background: #e5e7eb; border-radius: 4px; height: 10px; width: 120px; overflow: hidden; margin-bottom: 2px; }
 .occupancy-fill { height: 100%; }
 .occupancy-fill.state-available { background: var(--green); }
-.occupancy-fill.state-nearly-full { background: #d9a400; }
+.occupancy-fill.state-nearly-full { background: var(--amber); }
 .occupancy-fill.state-full { background: var(--red); }
 .level-available { color: var(--green); font-weight: bold; }
 .level-nearly-full { color: var(--amber); font-weight: bold; }
@@ -157,21 +157,21 @@ button:hover, input[type="submit"]:hover { background: var(--blue-dark); }
 }
 
 /* WP11 */
-.status-requested { color: #b8860b; font-weight: bold; }
-.status-approved { color: #1d6fa5; font-weight: bold; }
-.status-rejected { color: #d85a30; font-weight: bold; }
-.status-cancelled { color: #999; }
-.status-released { color: #1d9e75; font-weight: bold; }
+.status-requested { color: var(--amber); font-weight: bold; }
+.status-approved { color: var(--link); font-weight: bold; }
+.status-rejected { color: var(--red); font-weight: bold; }
+.status-cancelled { color: var(--accent); }
+.status-released { color: var(--green); font-weight: bold; }
 
 /* WP12 */
-.ack-yes { color: #1d9e75; font-weight: bold; }
-.ack-no { color: #d85a30; font-weight: bold; }
+.ack-yes { color: var(--green); font-weight: bold; }
+.ack-no { color: var(--red); font-weight: bold; }
 .data-table input[type="number"] { width: 80px; }
 
 /* WP13 */
-.check-pass { color: #1d9e75; font-weight: bold; }
-.check-warn { color: #b8860b; font-weight: bold; }
-.check-fail { color: #d85a30; font-weight: bold; }
+.check-pass { color: var(--green); font-weight: bold; }
+.check-warn { color: var(--amber); font-weight: bold; }
+.check-fail { color: var(--red); font-weight: bold; }
 
 /* WP14 */
 .user-box { text-align: right; font-size: 14px; margin-top: 8px; }
@@ -204,9 +204,9 @@ button:hover, input[type="submit"]:hover { background: var(--blue-dark); }
 .dash-value { font-size: 32px; font-weight: bold; color: #1f4e78; line-height: 1.1; }
 .dash-label { font-weight: bold; margin-top: 2px; }
 .dash-sub { font-size: 13px; color: #666; margin-top: 2px; }
-.dash-card.tone-ok { border-left-color: #1d9e75; } .dash-card.tone-ok .dash-value { color: #1d9e75; }
-.dash-card.tone-warn { border-left-color: #d9a400; } .dash-card.tone-warn .dash-value { color: #b8860b; }
-.dash-card.tone-bad { border-left-color: #d85a30; } .dash-card.tone-bad .dash-value { color: #d85a30; }
+.dash-card.tone-ok { border-left-color: var(--green); } .dash-card.tone-ok .dash-value { color: var(--green); }
+.dash-card.tone-warn { border-left-color: var(--amber); } .dash-card.tone-warn .dash-value { color: var(--amber); }
+.dash-card.tone-bad { border-left-color: var(--red); } .dash-card.tone-bad .dash-value { color: var(--red); }
 .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }
 .chart-box { background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 12px 16px; }
 .chart-box h2 { font-size: 16px; margin: 0 0 10px; }
@@ -221,7 +221,7 @@ button:hover, input[type="submit"]:hover { background: var(--blue-dark); }
 .bar-pair .bar-track { height: 9px; margin: 2px 0; }
 .bar-fill { display: block; height: 100%; border-radius: 3px; }
 .bar-text { font-size: 13px; color: #444; text-align: right; }
-.c-blue { background: #1f6fa5; } .c-grey { background: #9aa5b1; } .c-ok { background: #1d9e75; } .c-warn { background: #d9a400; } .c-bad { background: #d85a30; }
+.c-blue { background: #1f6fa5; } .c-grey { background: #9aa5b1; } .c-ok { background: var(--green); } .c-warn { background: var(--amber); } .c-bad { background: var(--red); }
 .line-chart { width: 100%; height: auto; max-height: 260px; }
 .line-grid { stroke: #ccc; stroke-width: 1; }
 .line-path { fill: none; stroke: #1f6fa5; stroke-width: 2.5; }

@@ -92,7 +92,7 @@ $centers = relQuery($conn, "SELECT center_id, center_name, barangay FROM evacuat
     <form method="post">
         <label>Disaster
             <select name="disaster_id">
-                <option value="">-- choose --</option>
+                <option value=""> choose </option>
                 <?php foreach ($disasters as $d): ?>
                     <option value="<?= (int) $d['disaster_id'] ?>" <?= $disasterId === (int) $d['disaster_id'] ? 'selected' : '' ?>>
                         <?= relEsc($d['disaster_number'] . ' - ' . $d['disaster_name'] . ' (' . $d['status'] . ')') ?>
@@ -103,7 +103,7 @@ $centers = relQuery($conn, "SELECT center_id, center_name, barangay FROM evacuat
 
         <label>Evacuation center
             <select name="center_id">
-                <option value="">-- choose --</option>
+                <option value=""> choose </option>
                 <?php foreach ($centers as $c): ?>
                     <option value="<?= (int) $c['center_id'] ?>" <?= $centerId === (int) $c['center_id'] ? 'selected' : '' ?>>
                         <?= relEsc($c['center_name'] . ($c['barangay'] ? ' (' . $c['barangay'] . ')' : '')) ?>

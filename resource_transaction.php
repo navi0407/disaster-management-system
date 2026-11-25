@@ -85,7 +85,7 @@ $resources = resQuery($conn,
     <form method="post">
         <label>Resource
             <select name="resource_id">
-                <option value="">-- choose --</option>
+                <option value=""> choose </option>
                 <?php foreach ($resources as $r): ?>
                     <option value="<?= (int) $r['resource_id'] ?>" <?= $selected === (int) $r['resource_id'] ? 'selected' : '' ?>>
                         <?= resEsc($r['resource_code'] . ' - ' . $r['resource_name'] . ' (on hand: ' . $r['quantity_on_hand'] . ' ' . $r['unit'] . ')') ?>

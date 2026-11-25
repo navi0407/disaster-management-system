@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <label>Disaster Type</label>
         <select name="disaster_type_id">
-            <option value="">-- Select type --</option>
+            <option value=""> Select type </option>
             <?php foreach ($types as $t): ?>
                 <option value="<?= (int) $t['disaster_type_id'] ?>" <?= $f['disaster_type_id'] === (string) $t['disaster_type_id'] ? 'selected' : '' ?>><?= errEsc($t['type_name']) ?></option>
             <?php endforeach; ?>
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <label>Severity</label>
         <select name="severity">
-            <option value="">-- Select severity --</option>
+            <option value=""> Select severity </option>
             <?php foreach ($severities as $s): ?>
                 <option <?= $f['severity'] === $s ? 'selected' : '' ?>><?= $s ?></option>
             <?php endforeach; ?>

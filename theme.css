@@ -1,19 +1,29 @@
-/* theme.css: the site colors, taken from the DMS logo.
-   Loaded after style.css and app_extra.css, so these override the old navy and orange.
-   Palette: primary #8C1D2A, brand red #A93239, dark maroon #560612, charcoal #2F3032, gray #7E8085, background #F6F4F4. */
+/* Site palette: 60% background, 30% secondary, 10% primary accent.
+   Loaded after style.css and app_extra.css to override their base colors. */
 :root {
-  --blue: #8c1d2a; /* primary: buttons, table header line */
-  --blue-dark: #6f1520; /* button hover */
-  --accent: #a93239; /* brand red accents */
-  --link: #8c1d2a;
-  --bg: #f6f4f4;
+  --primary: #8c1d2a;
+  --secondary: #6b6d70;
+  --background: #f6f4f4;
+  --green: var(--primary);
+  --amber: var(--primary);
+  --red: var(--primary);
+  --blue: var(--primary);
+  --blue-dark: #6f1520;
+  --accent: var(--primary);
+  --link: var(--primary);
+  --bg: var(--background);
   --border: #d9dadc;
   --text: #2f3032;
-  --muted: #6b6d70;
-  --red: #d92d20; /* danger only, so it stays different from the brand red */
+  --muted: var(--secondary);
 }
 body {
+  background: var(--background);
   color: var(--text);
+}
+
+.site-header {
+  background: var(--secondary);
+  border-bottom-color: var(--primary);
 }
 
 input:focus,
@@ -24,19 +34,59 @@ textarea:focus {
 
 /* Tables */
 .data-table th {
-  background: #f3eaea;
-  color: #560612;
-  border-bottom-color: #8c1d2a;
+  background: var(--secondary);
+  color: #fff;
+  border-bottom-color: var(--primary);
 }
 .data-table th,
 .data-table td {
-  border-color: #e6e1e1;
+  border-color: var(--border);
 }
 .data-table tbody tr:nth-child(even) {
-  background: #faf7f7;
+  background: #fff;
 }
 .data-table tbody tr:hover {
-  background: #f7e9ea;
+  background: #f0eded;
+}
+
+/* Dashboard and reports */
+.kpi,
+.dash-card {
+  border-left-color: #d9dadc;
+}
+.kpi-value,
+.report-card strong {
+  color: var(--primary);
+}
+.report-card:hover,
+.dash-card:hover {
+  border-color: var(--primary);
+}
+.dash-card.tone-ok,
+.dash-card.tone-warn,
+.dash-card.tone-bad {
+  border-left-color: #d9dadc;
+}
+.dash-grid .dash-card .dash-value {
+  color: var(--primary);
+}
+.dash-grid .dash-card:hover .dash-value {
+  color: var(--primary);
+}
+.chart-grid .bar-track {
+  background: var(--background);
+}
+.chart-grid .bar-fill {
+  background: var(--secondary);
+}
+.c-blue {
+  background: var(--secondary);
+}
+.line-path {
+  stroke: #8c1d2a;
+}
+.line-dot {
+  fill: #8c1d2a;
 }
 
 /* Messages */
@@ -46,74 +96,68 @@ textarea:focus {
   border-color: #d92d20;
 }
 
-/* Danger colors (real problems) use the bright red, not the brand red */
+/* Keep status indicators consistent with the primary color */
 .status-rejected,
 .ack-no,
 .check-fail {
-  color: #d92d20;
-}
-.dash-card.tone-bad {
-  border-left-color: #d92d20;
-}
-.dash-card.tone-bad .dash-value {
-  color: #d92d20;
+  color: var(--primary);
 }
 .c-bad {
-  background: #d92d20;
+  background: var(--primary);
 }
 
 
-/* Side navigation: light, so the logo shows in full */
+/* Use the secondary color for site navigation */
 .sidebar {
-  background: #fff;
-  color: var(--text);
-  border-right-color: #a93239;
+  background: var(--secondary);
+  color: #fff;
+  border-right-color: var(--primary);
 }
 .side-brand {
-  border-bottom-color: #e6e6e8;
+  border-bottom-color: rgba(255, 255, 255, 0.15);
 }
 .side-brand-name {
-  color: #560612;
+  color: #fff;
 }
 .side-group {
-  color: #7e8085;
+  color: rgba(255, 255, 255, 0.7);
 }
 .side-nav a {
-  color: #2f3032;
+  color: #fff;
 }
 .side-nav a:hover {
-  background: #f7e9ea;
+  background: rgba(255, 255, 255, 0.14);
 }
 .side-nav a.active {
-  background: #f7e9ea;
-  border-left-color: #a93239;
-  color: #560612;
+  background: rgba(255, 255, 255, 0.2);
+  border-left-color: var(--primary);
+  color: #fff;
 }
 .side-user {
-  background: #faf6f6;
-  border-top-color: #e6e6e8;
+  background: rgba(0, 0, 0, 0.15);
+  border-top-color: rgba(255, 255, 255, 0.15);
 }
 .side-avatar {
-  background: #a93239;
+  background: var(--primary);
   color: #fff;
 }
 .side-user-text strong {
-  color: #2f3032;
+  color: #fff;
 }
 .side-user-text small {
-  color: #7e8085;
+  color: rgba(255, 255, 255, 0.7);
 }
 .side-user-links a {
-  color: #8c1d2a;
+  color: #fff;
 }
 .topbar {
-  background: #fff;
-  color: #560612;
-  border-bottom-color: #a93239;
+  background: var(--secondary);
+  color: #fff;
+  border-bottom-color: var(--primary);
 }
 .menu-btn {
-  background: #f7e9ea;
-  color: #560612;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
 }
 @media (max-width: 900px) {
   .sidebar.open {

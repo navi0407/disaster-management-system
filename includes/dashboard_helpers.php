@@ -24,7 +24,7 @@ function dashBars($title, $rows, $href = '', $empty = 'Nothing to show yet.') {
             . '<span class="bar-track"><span class="bar-fill ' . rptEsc($r[3] ?? '') . '" style="width:' . $w . '%"></span></span>'
             . '<span class="bar-text">' . rptEsc($r[2]) . '</span></div>';
     }
-    if ($href) $h .= '<p class="chart-link"><a href="' . rptEsc($href) . '">Open the full report &rarr;</a></p>';
+    if ($href) $h .= '<p class="chart-link"><a href="' . rptEsc($href) . '">Open the full report</a></p>';
     return $h . '</section>';
 }
 
@@ -43,7 +43,7 @@ function dashDualBars($title, $rows, $nameA, $nameB, $href = '', $empty = 'Nothi
             . '<span class="bar-track"><span class="bar-fill c-blue" style="width:' . $wb . '%"></span></span></span>'
             . '<span class="bar-text">' . rptEsc($r[3]) . '</span></div>';
     }
-    if ($href) $h .= '<p class="chart-link"><a href="' . rptEsc($href) . '">Open the full report &rarr;</a></p>';
+    if ($href) $h .= '<p class="chart-link"><a href="' . rptEsc($href) . '">Open the full report</a></p>';
     return $h . '</section>';
 }
 
@@ -73,7 +73,7 @@ function dashLine($title, $labels, $values, $href = '') {
         . '<text x="' . ($l - 6) . '" y="' . ($y0 + 4) . '" class="line-axis" text-anchor="end">0</text>'
         . '<text x="' . ($l - 6) . '" y="' . ($yTop + 4) . '" class="line-axis" text-anchor="end">' . (int) $max . '</text>'
         . '<polyline points="' . implode(' ', $pts) . '" class="line-path"/>' . $dots . $xl . '</svg>';
-    if ($href) $h .= '<p class="chart-link"><a href="' . rptEsc($href) . '">Open the full report &rarr;</a></p>';
+    if ($href) $h .= '<p class="chart-link"><a href="' . rptEsc($href) . '">Open the full report</a></p>';
     return $h . '</section>';
 }
 

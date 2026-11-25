@@ -142,7 +142,7 @@ $doneMsg = ['added' => 'User created.', 'updated' => 'User updated.', 'reset' =>
         <label>Password (8 characters or more) <input type="password" name="password" autocomplete="new-password"></label>
         <label>Role
             <select name="role_id">
-                <option value="">-- choose --</option>
+                <option value=""> choose </option>
                 <?php foreach ($roles as $r): ?><option value="<?= (int) $r['role_id'] ?>"><?= authEsc($r['role_name']) ?></option><?php endforeach; ?>
             </select>
         </label>
