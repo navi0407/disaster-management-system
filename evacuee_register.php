@@ -73,9 +73,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 $wasOver = countCheckedIn($conn, $centerId) > (int) $center['capacity'];
                 syncCenterOccupancy($conn, $centerId);
-                logAudit($conn, $currentUserId, $wasOver ? 'Checked in evacuee OVER CAPACITY (authorized)' : 'Checked in evacuee', 'evacuees', null,
+                logAudit(
+                    $conn,
+                    $currentUserId,
+                    $wasOver ? 'Checked in evacuee OVER CAPACITY (authorized)' : 'Checked in evacuee',
+                    'evacuees',
+                    null,
                     $resident['first_name'] . ' ' . $resident['last_name'] . ' at ' . $center['center_name'],
-                    'EVC-' . $evacueeId);
+                    'EVC-' . $evacueeId
+                );
                 mysqli_commit($conn);
                 header('Location: evacuee_monitor.php?checked_in=' . $evacueeId);
                 exit;
@@ -89,86 +95,91 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Dropdown data
 $disasters = dbQueryAll($conn, "SELECT * FROM disasters WHERE status != 'Closed' ORDER BY date_reported DESC");
-$residents = dbQueryAll($conn,
+$residents = dbQueryAll(
+    $conn,
     "SELECT r.*, h.barangay AS household_barangay FROM residents r
      LEFT JOIN households h ON r.household_id = h.household_id
      WHERE r.status = 'Active'
        AND r.resident_id NOT IN (SELECT resident_id FROM evacuees WHERE status = 'Checked-in')
-     ORDER BY r.last_name, r.first_name");
+     ORDER BY r.last_name, r.first_name"
+);
 $centers = dbQueryAll($conn, "SELECT * FROM evacuation_centers WHERE status = 'Active' ORDER BY center_name");
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Register Evacuee</title>
-    <link rel="stylesheet" href="<?= errEsc(authCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
+    <?php include 'includes/header.php'; ?>
 
-<main>
-    <h1>Register an Evacuee (Check In)</h1>
+    <main>
+        <h1>Register an Evacuee (Check In)</h1>
 
-    <?php foreach ($errors as $err): ?><div class="error-box"><?= errEsc($err) ?></div><?php endforeach; ?>
+        <?php foreach ($errors as $err): ?><div class="error-box"><?= errEsc($err) ?></div><?php endforeach; ?>
 
-    <?php if (empty($disasters)): ?>
-        <div class="error-box">There is no open disaster. <a href="disaster_register.php">Register a disaster</a> first.</div>
-    <?php elseif (empty($centers)): ?>
-        <div class="error-box">There is no active evacuation center. <a href="evacuation_center_register.php">Register a center</a> first.</div>
-    <?php elseif (empty($residents)): ?>
-        <div class="error-box">There are no residents available to check in. Either none are registered, or everyone is already checked in. <a href="resident_register.php">Register a resident</a>.</div>
-    <?php else: ?>
-    <form method="post">
-        <label>Disaster</label>
-        <select name="disaster_id">
-            <option value="">-- Select disaster --</option>
-            <?php foreach ($disasters as $d): ?>
-                <option value="<?= (int) $d['disaster_id'] ?>" <?= $f['disaster_id'] === (string) $d['disaster_id'] ? 'selected' : '' ?>>
-                    <?= errEsc($d['disaster_number'] . ' - ' . $d['disaster_name']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+        <?php if (empty($disasters)): ?>
+            <div class="error-box">There is no open disaster. <a href="disaster_register.php">Register a disaster</a> first.</div>
+        <?php elseif (empty($centers)): ?>
+            <div class="error-box">There is no active evacuation center. <a href="evacuation_center_register.php">Register a center</a> first.</div>
+        <?php elseif (empty($residents)): ?>
+            <div class="error-box">There are no residents available to check in. Either none are registered, or everyone is already checked in. <a href="resident_register.php">Register a resident</a>.</div>
+        <?php else: ?>
+            <form method="post">
+                <label>Disaster</label>
+                <select name="disaster_id">
+                    <option value="">-- Select disaster --</option>
+                    <?php foreach ($disasters as $d): ?>
+                        <option value="<?= (int) $d['disaster_id'] ?>" <?= $f['disaster_id'] === (string) $d['disaster_id'] ? 'selected' : '' ?>>
+                            <?= errEsc($d['disaster_number'] . ' - ' . $d['disaster_name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
 
-        <label>Resident</label>
-        <select name="resident_id">
-            <option value="">-- Select resident --</option>
-            <?php foreach ($residents as $r): ?>
-                <option value="<?= (int) $r['resident_id'] ?>" <?= $f['resident_id'] === (string) $r['resident_id'] ? 'selected' : '' ?>>
-                    <?= errEsc($r['last_name'] . ', ' . $r['first_name']) ?>
-                    (Household #<?= (int) $r['household_id'] ?>, <?= errEsc($r['barangay'] ?: $r['household_barangay']) ?>)
-                    <?= $r['vulnerability_type'] !== 'None' ? ' - ' . errEsc($r['vulnerability_type']) : '' ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+                <label>Resident</label>
+                <select name="resident_id">
+                    <option value="">-- Select resident --</option>
+                    <?php foreach ($residents as $r): ?>
+                        <option value="<?= (int) $r['resident_id'] ?>" <?= $f['resident_id'] === (string) $r['resident_id'] ? 'selected' : '' ?>>
+                            <?= errEsc($r['last_name'] . ', ' . $r['first_name']) ?>
+                            (Household #<?= (int) $r['household_id'] ?>, <?= errEsc($r['barangay'] ?: $r['household_barangay']) ?>)
+                            <?= $r['vulnerability_type'] !== 'None' ? ' - ' . errEsc($r['vulnerability_type']) : '' ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
 
-        <label>Evacuation Center</label>
-        <select name="center_id">
-            <option value="">-- Select center --</option>
-            <?php foreach ($centers as $c): ?>
-                <?php $available = (int) $c['capacity'] - (int) $c['current_occupancy']; ?>
-                <option value="<?= (int) $c['center_id'] ?>" <?= ($available <= 0 && !$canOverride) ? 'disabled' : '' ?>
-                        <?= $f['center_id'] === (string) $c['center_id'] ? 'selected' : '' ?>>
-                    <?= errEsc($c['center_name']) ?>
-                    (<?= $available > 0 ? $available . ' of ' . (int) $c['capacity'] . ' spots left' : 'FULL' ?>)
-                </option>
-            <?php endforeach; ?>
-        </select>
+                <label>Evacuation Center</label>
+                <select name="center_id">
+                    <option value="">-- Select center --</option>
+                    <?php foreach ($centers as $c): ?>
+                        <?php $available = (int) $c['capacity'] - (int) $c['current_occupancy']; ?>
+                        <option value="<?= (int) $c['center_id'] ?>" <?= ($available <= 0 && !$canOverride) ? 'disabled' : '' ?>
+                            <?= $f['center_id'] === (string) $c['center_id'] ? 'selected' : '' ?>>
+                            <?= errEsc($c['center_name']) ?>
+                            (<?= $available > 0 ? $available . ' of ' . (int) $c['capacity'] . ' spots left' : 'FULL' ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
 
-        <?php if ($canOverride): ?>
-        <label><input type="checkbox" name="override_capacity" value="1" <?= !empty($_POST['override_capacity']) ? 'checked' : '' ?>>
-            Allow going over capacity (authorized users only, this is recorded in the audit trail)</label>
+                <?php if ($canOverride): ?>
+                    <label><input type="checkbox" name="override_capacity" value="1" <?= !empty($_POST['override_capacity']) ? 'checked' : '' ?>>
+                        Allow going over capacity (authorized users only, this is recorded in the audit trail)</label>
+                <?php endif; ?>
+
+                <label>Special Needs (optional)</label>
+                <input type="text" name="special_needs" maxlength="255" value="<?= errEsc($f['special_needs']) ?>"
+                    placeholder="e.g. Needs maintenance medicine, uses a wheelchair">
+
+                <button type="submit">Check In Evacuee</button>
+            </form>
         <?php endif; ?>
+    </main>
 
-        <label>Special Needs (optional)</label>
-        <input type="text" name="special_needs" maxlength="255" value="<?= errEsc($f['special_needs']) ?>"
-               placeholder="e.g. Needs maintenance medicine, uses a wheelchair">
-
-        <button type="submit">Check In Evacuee</button>
-    </form>
-    <?php endif; ?>
-</main>
-
-<?php include 'includes/footer.php'; ?>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

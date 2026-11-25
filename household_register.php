@@ -22,9 +22,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Lab 50: duplicate records. The same barangay and address is the same household.
     if (!$errors) {
-        $dup = dbQueryAll($conn,
+        $dup = dbQueryAll(
+            $conn,
             "SELECT household_id FROM households WHERE LOWER(barangay) = LOWER(?) AND LOWER(address) = LOWER(?) LIMIT 1",
-            'ss', [$f['barangay'], $f['address']]);
+            'ss',
+            [$f['barangay'], $f['address']]
+        );
         if ($dup) $errors[] = 'That household is already registered (Household #' . (int) $dup[0]['household_id'] . ').';
     }
 
@@ -46,32 +49,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Register Household</title>
-    <link rel="stylesheet" href="<?= errEsc(authCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
+    <?php include 'includes/header.php'; ?>
 
-<main>
-    <h1>Register a Household</h1>
+    <main>
+        <h1>Register a Household</h1>
 
-    <?php foreach ($errors as $err): ?><div class="error-box"><?= errEsc($err) ?></div><?php endforeach; ?>
+        <?php foreach ($errors as $err): ?><div class="error-box"><?= errEsc($err) ?></div><?php endforeach; ?>
 
-    <form method="post">
-        <label>Barangay</label>
-        <input type="text" name="barangay" maxlength="100" placeholder="e.g. Barangay Bonfal Proper" value="<?= errEsc($f['barangay']) ?>">
+        <form method="post">
+            <label>Barangay</label>
+            <input type="text" name="barangay" maxlength="100" placeholder="e.g. Barangay Bonfal Proper" value="<?= errEsc($f['barangay']) ?>">
 
-        <label>Address</label>
-        <input type="text" name="address" maxlength="150" placeholder="Street / Purok" value="<?= errEsc($f['address']) ?>">
+            <label>Address</label>
+            <input type="text" name="address" maxlength="150" placeholder="Street / Purok" value="<?= errEsc($f['address']) ?>">
 
-        <button type="submit">Register Household</button>
-    </form>
+            <button type="submit">Register Household</button>
+        </form>
 
-    <p>Once this household is saved, you can register residents into it and assign a household head.</p>
-</main>
+        <p>Once this household is saved, you can register residents into it and assign a household head.</p>
+    </main>
 
-<?php include 'includes/footer.php'; ?>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

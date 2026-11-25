@@ -41,51 +41,62 @@ $rows = $query
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Disaster Types</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
+    <?php include 'includes/header.php'; ?>
 
-<main>
-    <h1>Disaster Type Management</h1>
+    <main>
+        <h1>Disaster Type Management</h1>
 
-    <h2>Add a Disaster Type</h2>
-    <form method="post">
-        <input type="text" name="type_name" placeholder="Type name (e.g. Typhoon)" required>
-        <input type="text" name="description" placeholder="Short description">
-        <button type="submit">Add</button>
-    </form>
+        <h2>Add a Disaster Type</h2>
+        <form method="post">
+            <input type="text" name="type_name" placeholder="Type name (e.g. Typhoon)" required>
+            <input type="text" name="description" placeholder="Short description">
+            <button type="submit">Add</button>
+        </form>
 
-    <h2>All Disaster Types</h2>
-    <?php renderSearchBox($query); ?>
-    <table class="data-table">
-        <thead>
-            <tr><th>ID</th><th>Type Name</th><th>Description</th><th>Status</th><th>Action</th></tr>
-        </thead>
-        <tbody>
-        <?php if (empty($rows)): ?>
-            <tr><td colspan="5">No records found.</td></tr>
-        <?php endif; ?>
-        <?php foreach ($rows as $row): ?>
-            <tr>
-                <td><?= htmlspecialchars($row['disaster_type_id']) ?></td>
-                <td><?= htmlspecialchars($row['type_name']) ?></td>
-                <td><?= htmlspecialchars($row['description']) ?></td>
-                <td class="status-<?= strtolower($row['status']) ?>"><?= htmlspecialchars($row['status']) ?></td>
-                <td>
-                    <a href="?toggle=<?= $row['disaster_type_id'] ?>">
-                        <?= $row['status'] === 'Active' ? 'Deactivate' : 'Activate' ?>
-                    </a>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-</main>
+        <h2>All Disaster Types</h2>
+        <?php renderSearchBox($query); ?>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($rows)): ?>
+                    <tr>
+                        <td colspan="5">No records found.</td>
+                    </tr>
+                <?php endif; ?>
+                <?php foreach ($rows as $row): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($row['disaster_type_id']) ?></td>
+                        <td><?= htmlspecialchars($row['type_name']) ?></td>
+                        <td><?= htmlspecialchars($row['description']) ?></td>
+                        <td class="status-<?= strtolower($row['status']) ?>"><?= htmlspecialchars($row['status']) ?></td>
+                        <td>
+                            <a href="?toggle=<?= $row['disaster_type_id'] ?>">
+                                <?= $row['status'] === 'Active' ? 'Deactivate' : 'Activate' ?>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </main>
 
-<?php include 'includes/footer.php'; ?>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

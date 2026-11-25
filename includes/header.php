@@ -50,16 +50,21 @@ $navActive = null;
 foreach ($navSections as $items) {
     foreach ($items as $item) {
         foreach ($item[2] as $prefix) {
-            if (strpos($navCurrent, $prefix) === 0) { $navActive = $item[0]; break 3; }
+            if (strpos($navCurrent, $prefix) === 0) {
+                $navActive = $item[0];
+                break 3;
+            }
         }
     }
 }
 $navEsc = fn($v) => htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8');
 ?>
-<script>document.body.classList.add('has-sidebar');</script>
+<script>
+    document.body.classList.add('has-sidebar');
+</script>
 <div class="topbar no-print">
     <button type="button" class="menu-btn" aria-label="Open menu" aria-expanded="false"
-            onclick="var s=document.getElementById('sidebar');var o=s.classList.toggle('open');this.setAttribute('aria-expanded',o);">&#9776; Menu</button>
+        onclick="var s=document.getElementById('sidebar');var o=s.classList.toggle('open');this.setAttribute('aria-expanded',o);">&#9776; Menu</button>
     <span class="topbar-title">Disaster Management System</span>
 </div>
 <aside class="sidebar no-print" id="sidebar">
@@ -74,23 +79,23 @@ $navEsc = fn($v) => htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8');
             <div class="side-group"><?= $navEsc($title) ?></div>
             <?php foreach ($items as $item): ?>
                 <a href="<?= $navEsc($item[0]) ?>" class="<?= $item[0] === $navActive ? 'active' : '' ?>"
-                   <?= $item[0] === $navActive ? 'aria-current="page"' : '' ?>><?= $navEsc($item[1]) ?></a>
+                    <?= $item[0] === $navActive ? 'aria-current="page"' : '' ?>><?= $navEsc($item[1]) ?></a>
             <?php endforeach; ?>
         <?php endforeach; ?>
     </nav>
     <?php if ($navUser): ?>
-    <div class="side-user">
-        <div class="side-user-row">
-            <span class="side-avatar"><?= $navEsc(strtoupper(mb_substr($navUser['username'], 0, 1))) ?></span>
-            <span class="side-user-text">
-                <strong><?= $navEsc($navUser['username']) ?></strong>
-                <small><?= $navEsc($navUser['role']) ?></small>
-            </span>
+        <div class="side-user">
+            <div class="side-user-row">
+                <span class="side-avatar"><?= $navEsc(strtoupper(mb_substr($navUser['username'], 0, 1))) ?></span>
+                <span class="side-user-text">
+                    <strong><?= $navEsc($navUser['username']) ?></strong>
+                    <small><?= $navEsc($navUser['role']) ?></small>
+                </span>
+            </div>
+            <div class="side-user-links">
+                <a href="change_password.php">Change password</a>
+                <a href="logout.php">Log out</a>
+            </div>
         </div>
-        <div class="side-user-links">
-            <a href="change_password.php">Change password</a>
-            <a href="logout.php">Log out</a>
-        </div>
-    </div>
     <?php endif; ?>
 </aside>

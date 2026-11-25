@@ -31,30 +31,33 @@ $rows = $query
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Demo: Disaster Types (Reusable Engine Test)</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
+    <?php include 'includes/header.php'; ?>
 
-<main>
-    <h1>Reusable Engine Test: Disaster Types</h1>
-    <p>If this page works, your CRUD engine, search engine, and audit logger are all functioning together.</p>
+    <main>
+        <h1>Reusable Engine Test: Disaster Types</h1>
+        <p>If this page works, your CRUD engine, search engine, and audit logger are all functioning together.</p>
 
-    <h2>Add a Disaster Type</h2>
-    <form method="post">
-        <input type="text" name="type_name" placeholder="Type name (e.g. Typhoon)" required>
-        <input type="text" name="description" placeholder="Short description">
-        <button type="submit">Add</button>
-    </form>
+        <h2>Add a Disaster Type</h2>
+        <form method="post">
+            <input type="text" name="type_name" placeholder="Type name (e.g. Typhoon)" required>
+            <input type="text" name="description" placeholder="Short description">
+            <button type="submit">Add</button>
+        </form>
 
-    <h2>All Disaster Types</h2>
-    <?php renderSearchBox($query); ?>
-    <?php renderTable(['ID', 'Type Name', 'Description'], $rows); ?>
-</main>
+        <h2>All Disaster Types</h2>
+        <?php renderSearchBox($query); ?>
+        <?php renderTable(['ID', 'Type Name', 'Description'], $rows); ?>
+    </main>
 
-<?php include 'includes/footer.php'; ?>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

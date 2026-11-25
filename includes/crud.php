@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Generic CRUD engine — reusable across every module.
  * Requires $conn (a mysqli connection) to already exist, e.g. via require 'config/db.php'.
@@ -12,7 +13,8 @@
  *   dbSearch($conn, 'disaster_types', ['type_name', 'description'], 'flood');
  */
 
-function dbInsert($conn, $table, $data) {
+function dbInsert($conn, $table, $data)
+{
     $fields = array_keys($data);
     $placeholders = implode(',', array_fill(0, count($fields), '?'));
     $sql = "INSERT INTO $table (" . implode(',', $fields) . ") VALUES ($placeholders)";
@@ -25,7 +27,8 @@ function dbInsert($conn, $table, $data) {
     return $insertId;
 }
 
-function dbUpdate($conn, $table, $idField, $id, $data) {
+function dbUpdate($conn, $table, $idField, $id, $data)
+{
     $set = implode(',', array_map(fn($f) => "$f = ?", array_keys($data)));
     $sql = "UPDATE $table SET $set WHERE $idField = ?";
     $stmt = mysqli_prepare($conn, $sql);
@@ -37,7 +40,8 @@ function dbUpdate($conn, $table, $idField, $id, $data) {
     mysqli_stmt_close($stmt);
 }
 
-function dbDelete($conn, $table, $idField, $id) {
+function dbDelete($conn, $table, $idField, $id)
+{
     $sql = "DELETE FROM $table WHERE $idField = ?";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, 'i', $id);
@@ -45,14 +49,16 @@ function dbDelete($conn, $table, $idField, $id) {
     mysqli_stmt_close($stmt);
 }
 
-function dbGetAll($conn, $table, $orderBy = null) {
+function dbGetAll($conn, $table, $orderBy = null)
+{
     $sql = "SELECT * FROM $table";
     if ($orderBy) $sql .= " ORDER BY $orderBy";
     $result = mysqli_query($conn, $sql);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function dbGetById($conn, $table, $idField, $id) {
+function dbGetById($conn, $table, $idField, $id)
+{
     $sql = "SELECT * FROM $table WHERE $idField = ?";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, 'i', $id);
@@ -61,7 +67,8 @@ function dbGetById($conn, $table, $idField, $id) {
     return mysqli_fetch_assoc($result);
 }
 
-function dbSearch($conn, $table, $searchFields, $searchTerm) {
+function dbSearch($conn, $table, $searchFields, $searchTerm)
+{
     if (empty($searchTerm)) return dbGetAll($conn, $table);
     $conditions = implode(' OR ', array_map(fn($f) => "$f LIKE ?", $searchFields));
     $sql = "SELECT * FROM $table WHERE $conditions";

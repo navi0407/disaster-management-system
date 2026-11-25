@@ -42,9 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Lab 50: duplicate records. Same center name in the same barangay.
     if (!$errors) {
-        $dup = dbQueryAll($conn,
+        $dup = dbQueryAll(
+            $conn,
             "SELECT center_id FROM evacuation_centers WHERE LOWER(center_name) = LOWER(?) AND LOWER(barangay) = LOWER(?) AND center_id <> ? LIMIT 1",
-            'ssi', [$f['center_name'], $f['barangay'], $postId]);
+            'ssi',
+            [$f['center_name'], $f['barangay'], $postId]
+        );
         if ($dup) $errors[] = 'An evacuation center with that name already exists in this barangay.';
     }
 
@@ -84,49 +87,52 @@ $isEdit = $editing || !empty($_POST['center_id']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title><?= $isEdit ? 'Edit Evacuation Center' : 'Register Evacuation Center' ?></title>
-    <link rel="stylesheet" href="<?= errEsc(authCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
+    <?php include 'includes/header.php'; ?>
 
-<main>
-    <h1><?= $isEdit ? 'Edit Evacuation Center' : 'Register an Evacuation Center' ?></h1>
+    <main>
+        <h1><?= $isEdit ? 'Edit Evacuation Center' : 'Register an Evacuation Center' ?></h1>
 
-    <?php foreach ($errors as $err): ?><div class="error-box"><?= errEsc($err) ?></div><?php endforeach; ?>
+        <?php foreach ($errors as $err): ?><div class="error-box"><?= errEsc($err) ?></div><?php endforeach; ?>
 
-    <form method="post">
-        <?php if ($isEdit): ?>
-            <input type="hidden" name="center_id" value="<?= (int) ($editing['center_id'] ?? $_POST['center_id'] ?? 0) ?>">
-        <?php endif; ?>
+        <form method="post">
+            <?php if ($isEdit): ?>
+                <input type="hidden" name="center_id" value="<?= (int) ($editing['center_id'] ?? $_POST['center_id'] ?? 0) ?>">
+            <?php endif; ?>
 
-        <label>Center Name</label>
-        <input type="text" name="center_name" maxlength="100" value="<?= errEsc($f['center_name']) ?>" placeholder="e.g. Bayombong Central School Gym">
+            <label>Center Name</label>
+            <input type="text" name="center_name" maxlength="100" value="<?= errEsc($f['center_name']) ?>" placeholder="e.g. Bayombong Central School Gym">
 
-        <label>Location</label>
-        <input type="text" name="location" maxlength="150" value="<?= errEsc($f['location']) ?>" placeholder="Specific address or landmark">
+            <label>Location</label>
+            <input type="text" name="location" maxlength="150" value="<?= errEsc($f['location']) ?>" placeholder="Specific address or landmark">
 
-        <label>Barangay</label>
-        <input type="text" name="barangay" maxlength="100" value="<?= errEsc($f['barangay']) ?>">
+            <label>Barangay</label>
+            <input type="text" name="barangay" maxlength="100" value="<?= errEsc($f['barangay']) ?>">
 
-        <label>Contact Person</label>
-        <input type="text" name="contact_person" maxlength="100" value="<?= errEsc($f['contact_person']) ?>">
+            <label>Contact Person</label>
+            <input type="text" name="contact_person" maxlength="100" value="<?= errEsc($f['contact_person']) ?>">
 
-        <label>Contact Number</label>
-        <input type="text" name="contact_number" maxlength="20" value="<?= errEsc($f['contact_number']) ?>" placeholder="e.g. 09171234567">
+            <label>Contact Number</label>
+            <input type="text" name="contact_number" maxlength="20" value="<?= errEsc($f['contact_number']) ?>" placeholder="e.g. 09171234567">
 
-        <label>Capacity (max number of evacuees)</label>
-        <input type="number" name="capacity" min="1" max="100000" value="<?= errEsc($f['capacity']) ?>">
+            <label>Capacity (max number of evacuees)</label>
+            <input type="number" name="capacity" min="1" max="100000" value="<?= errEsc($f['capacity']) ?>">
 
-        <label>Facilities</label>
-        <input type="text" name="facilities" maxlength="255" value="<?= errEsc($f['facilities']) ?>" placeholder="e.g. Water, toilets, medical area">
+            <label>Facilities</label>
+            <input type="text" name="facilities" maxlength="255" value="<?= errEsc($f['facilities']) ?>" placeholder="e.g. Water, toilets, medical area">
 
-        <button type="submit"><?= $isEdit ? 'Save Changes' : 'Register Center' ?></button>
-    </form>
-</main>
+            <button type="submit"><?= $isEdit ? 'Save Changes' : 'Register Center' ?></button>
+        </form>
+    </main>
 
-<?php include 'includes/footer.php'; ?>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

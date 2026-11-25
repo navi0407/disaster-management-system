@@ -15,21 +15,38 @@ $hhRows = $disId
         . ($activeOnly ? " WHERE COALESCE(d.status, '') <> 'Closed'" : ""));
 $hhIds = array_map('intval', array_column($hhRows, 'household_id'));
 
-$totalRes = 0; $vulnTotal = 0; $byBarangay = []; $vulnRows = []; $centerRows = []; $sheltered = 0;
+$totalRes = 0;
+$vulnTotal = 0;
+$byBarangay = [];
+$vulnRows = [];
+$centerRows = [];
+$sheltered = 0;
 if ($hhIds) {
     [$ph, $ty, $pa] = rptIn($hhIds);
     $totalRes = (int) (rptQuery($conn, "SELECT COUNT(*) AS n FROM residents r WHERE r.status = 'Active' AND r.household_id IN ($ph)", $ty, $pa)[0]['n'] ?? 0);
 
-    foreach (rptQuery($conn,
-        "SELECT h.barangay, COUNT(r.resident_id) AS residents, COUNT(DISTINCT h.household_id) AS households
+    foreach (
+        rptQuery(
+            $conn,
+            "SELECT h.barangay, COUNT(r.resident_id) AS residents, COUNT(DISTINCT h.household_id) AS households
          FROM households h LEFT JOIN residents r ON r.household_id = h.household_id AND r.status = 'Active'
-         WHERE h.household_id IN ($ph) GROUP BY h.barangay ORDER BY residents DESC, h.barangay", $ty, $pa) as $r)
+         WHERE h.household_id IN ($ph) GROUP BY h.barangay ORDER BY residents DESC, h.barangay",
+            $ty,
+            $pa
+        ) as $r
+    )
         $byBarangay[] = [$r['barangay'] ?: '(no barangay)', (int) $r['households'], (int) $r['residents']];
 
-    foreach (rptQuery($conn,
-        "SELECT TRIM(r.vulnerability_type) AS vtype, COUNT(*) AS n FROM residents r
+    foreach (
+        rptQuery(
+            $conn,
+            "SELECT TRIM(r.vulnerability_type) AS vtype, COUNT(*) AS n FROM residents r
          WHERE r.status = 'Active' AND r.household_id IN ($ph) AND " . rptVulnSql('r') . "
-         GROUP BY TRIM(r.vulnerability_type) ORDER BY n DESC", $ty, $pa) as $r) {
+         GROUP BY TRIM(r.vulnerability_type) ORDER BY n DESC",
+            $ty,
+            $pa
+        ) as $r
+    ) {
         $vulnRows[] = [$r['vtype'], (int) $r['n']];
         $vulnTotal += (int) $r['n'];
     }
@@ -39,7 +56,7 @@ if ($hhIds) {
              FROM evacuees e JOIN residents r ON r.resident_id = e.resident_id
              JOIN evacuation_centers c ON c.center_id = e.center_id
              WHERE e.status = 'Checked-in' AND r.status = 'Active' AND r.household_id IN ($ph)"
-          . ($disId ? " AND e.disaster_id = ?" : "") . " GROUP BY c.center_id, c.center_name ORDER BY n DESC";
+        . ($disId ? " AND e.disaster_id = ?" : "") . " GROUP BY c.center_id, c.center_name ORDER BY n DESC";
     foreach (rptQuery($conn, $cSql, $ty . ($disId ? 'i' : ''), $disId ? array_merge($pa, [$disId]) : $pa) as $r) {
         $centerRows[] = [$r['center_name'], (int) $r['n']];
         $sheltered += (int) $r['n'];
@@ -57,13 +74,19 @@ rptPage([
     'csv' => 'affected_residents_report',
     'filters' => rptSelect('disaster_id', ['active' => 'Active disasters only'] + $disasterOptions, $disasterId, 'All disasters'),
     'kpis' => [
-        ['Total affected residents', $totalRes], ['Affected households', count($hhIds)],
-        ['Vulnerable residents', $vulnTotal], ['Sheltered right now', $sheltered],
+        ['Total affected residents', $totalRes],
+        ['Affected households', count($hhIds)],
+        ['Vulnerable residents', $vulnTotal],
+        ['Sheltered right now', $sheltered],
     ],
     'sections' => [
         ['title' => 'Residents by barangay', 'headers' => ['Barangay', 'Households', 'Residents'], 'rows' => $byBarangay],
-        ['title' => 'Vulnerable residents', 'headers' => ['Vulnerability type', 'Residents'], 'rows' => $vulnRows,
-         'note' => 'A resident is vulnerable when a vulnerability type is set (anything except empty or "None").'],
+        [
+            'title' => 'Vulnerable residents',
+            'headers' => ['Vulnerability type', 'Residents'],
+            'rows' => $vulnRows,
+            'note' => 'A resident is vulnerable when a vulnerability type is set (anything except empty or "None").'
+        ],
         ['title' => 'Residents by evacuation center', 'headers' => ['Evacuation center', 'Residents checked in'], 'rows' => $centerRows],
     ],
     'notes' => ['If these numbers differ from the Affected Residents page, check that disaster areas and household barangays are spelled exactly the same.'],

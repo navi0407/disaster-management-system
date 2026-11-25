@@ -11,7 +11,8 @@ $id = (int) ($_GET['id'] ?? $_POST['distribution_id'] ?? 0);
 $errors = [];
 
 // Short text of the lines, used in the audit log
-function relLinesText($conn, $distId) {
+function relLinesText($conn, $distId)
+{
     $rows = relQuery($conn, "SELECT ri.item_name, ri.unit, di.quantity FROM distribution_items di
                              JOIN relief_items ri ON ri.relief_item_id = di.relief_item_id
                              WHERE di.distribution_id = ? ORDER BY ri.item_name", 'i', [$distId]);
@@ -59,21 +60,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id > 0 && isset($_POST['action']))
 
                 if (!$errors) {
                     dbUpdate($conn, 'relief_distributions', 'distribution_id', $id, [
-                        'status' => 'Approved', 'approved_by' => $currentUserId, 'approval_date' => date('Y-m-d H:i:s')]);
+                        'status' => 'Approved',
+                        'approved_by' => $currentUserId,
+                        'approval_date' => date('Y-m-d H:i:s')
+                    ]);
                     logAudit($conn, $currentUserId, 'Approved relief distribution', 'relief_distributions', 'Requested', 'Approved: ' . relLinesText($conn, $id), $dist['reference_number']);
                     mysqli_commit($conn);
-                    header('Location: relief_request_view.php?id=' . $id . '&done=approved'); exit;
+                    header('Location: relief_request_view.php?id=' . $id . '&done=approved');
+                    exit;
                 }
             } elseif ($action === 'reject') {
                 dbUpdate($conn, 'relief_distributions', 'distribution_id', $id, ['status' => 'Rejected']);
                 logAudit($conn, $currentUserId, 'Rejected relief distribution', 'relief_distributions', 'Requested', 'Rejected. Reason: ' . $reason, $dist['reference_number']);
                 mysqli_commit($conn);
-                header('Location: relief_request_view.php?id=' . $id . '&done=rejected'); exit;
+                header('Location: relief_request_view.php?id=' . $id . '&done=rejected');
+                exit;
             } else { // cancel
                 dbUpdate($conn, 'relief_distributions', 'distribution_id', $id, ['status' => 'Cancelled']);
                 logAudit($conn, $currentUserId, 'Cancelled relief distribution', 'relief_distributions', 'Requested', 'Cancelled', $dist['reference_number']);
                 mysqli_commit($conn);
-                header('Location: relief_request_view.php?id=' . $id . '&done=cancelled'); exit;
+                header('Location: relief_request_view.php?id=' . $id . '&done=cancelled');
+                exit;
             }
             mysqli_rollback($conn);
         } catch (Throwable $e) {
@@ -84,9 +91,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id > 0 && isset($_POST['action']))
 }
 
 // ---- Load the request for display ----
-$dist = null; $lines = [];
+$dist = null;
+$lines = [];
 if ($id > 0) {
-    $rows = relQuery($conn,
+    $rows = relQuery(
+        $conn,
         "SELECT d.*, ds.disaster_number, ds.disaster_name, ds.status AS disaster_status,
                 c.center_name, c.status AS center_status, ur.username AS requester, ua.username AS approver
          FROM relief_distributions d
@@ -94,7 +103,10 @@ if ($id > 0) {
          LEFT JOIN evacuation_centers c ON d.center_id = c.center_id
          LEFT JOIN users ur ON d.requested_by = ur.user_id
          LEFT JOIN users ua ON d.approved_by = ua.user_id
-         WHERE d.distribution_id = ?", 'i', [$id]);
+         WHERE d.distribution_id = ?",
+        'i',
+        [$id]
+    );
     $dist = $rows[0] ?? null;
     if ($dist) {
         $lines = relQuery($conn, "SELECT di.*, ri.item_name, ri.unit FROM distribution_items di
@@ -107,101 +119,134 @@ if (!$dist) errNotFound('relief request');   // Lab 50: a bad or old link
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Review Relief Request</title>
-    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
-<main>
-    <h1>Relief Request</h1>
-    <p><a href="relief_request_monitor.php">&larr; Back to requests</a></p>
+    <?php include 'includes/header.php'; ?>
+    <main>
+        <h1>Relief Request</h1>
+        <p><a href="relief_request_monitor.php">&larr; Back to requests</a></p>
 
-    <?php if (isset($_GET['done'], $doneMessages[$_GET['done']])): ?><div class="success-box"><?= relEsc($doneMessages[$_GET['done']]) ?></div><?php endif; ?>
-    <?php foreach ($errors as $err): ?><div class="error-box"><?= relEsc($err) ?></div><?php endforeach; ?>
+        <?php if (isset($_GET['done'], $doneMessages[$_GET['done']])): ?><div class="success-box"><?= relEsc($doneMessages[$_GET['done']]) ?></div><?php endif; ?>
+        <?php foreach ($errors as $err): ?><div class="error-box"><?= relEsc($err) ?></div><?php endforeach; ?>
 
-    <?php if (!$dist): ?>
-        <div class="error-box">That request was not found.</div>
-    <?php else: ?>
-        <table class="data-table">
-            <tbody>
-                <tr><th>Reference</th><td><?= relEsc($dist['reference_number']) ?></td></tr>
-                <tr><th>Status</th><td class="status-<?= strtolower(relEsc($dist['status'])) ?>"><?= relEsc($dist['status']) ?></td></tr>
-                <tr><th>Disaster</th><td><?= relEsc($dist['disaster_number'] . ' - ' . $dist['disaster_name']) ?> (<?= relEsc($dist['disaster_status']) ?>)</td></tr>
-                <tr><th>Evacuation center</th><td><?= relEsc($dist['center_name']) ?> (<?= relEsc($dist['center_status']) ?>)</td></tr>
-                <tr><th>Requested by</th><td><?= relEsc($dist['requester']) ?> on <?= relEsc($dist['request_date']) ?></td></tr>
-                <?php if ($dist['approved_by']): ?>
-                <tr><th>Approved by</th><td><?= relEsc($dist['approver']) ?> on <?= relEsc($dist['approval_date']) ?></td></tr>
-                <?php endif; ?>
-                <?php if ($dist['release_date']): ?>
-                <tr><th>Released on</th><td><?= relEsc($dist['release_date']) ?></td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-
-        <h2>Items requested</h2>
-        <?php $waiting = $dist['status'] === 'Requested'; $short = false; ?>
-        <table class="data-table">
-            <thead><tr>
-                <th>Item</th><th>Quantity</th><?php if ($dist['status'] === 'Released'): ?><th>Household</th><th>Signed</th><?php endif; ?>
-                <?php if ($waiting): ?><th>In stock (not expired)</th><th>Reserved by others</th><th>Available</th><th>Check</th><?php endif; ?>
-            </tr></thead>
-            <tbody>
-            <?php foreach ($lines as $ln): ?>
-                <tr>
-                    <td><?= relEsc($ln['item_name']) ?></td>
-                    <td><?= (int) $ln['quantity'] ?> <?= relEsc($ln['unit']) ?></td>
-                    <?php if ($dist['status'] === 'Released'): ?><td>#<?= (int) $ln['household_id'] ?></td><td class="<?= $ln['signature_on_file'] ? 'ack-yes' : 'ack-no' ?>"><?= $ln['signature_on_file'] ? 'Yes' : 'Not yet' ?></td><?php endif; ?>
-                    <?php if ($waiting):
-                        $iid = (int) $ln['relief_item_id'];
-                        $stock = relUsable($conn, $iid); // expired items do not count
-                        $res = relReserved($conn, $iid, $id);
-                        $avail = $stock - $res;
-                        $enough = (int) $ln['quantity'] <= $avail;
-                        if (!$enough) $short = true; ?>
-                        <td><?= $stock ?></td>
-                        <td><?= $res ?></td>
-                        <td><?= $avail ?></td>
-                        <td class="<?= $enough ? 'stock-in' : 'stock-out' ?>"><?= $enough ? 'Enough' : 'Short by ' . ((int) $ln['quantity'] - $avail) ?></td>
+        <?php if (!$dist): ?>
+            <div class="error-box">That request was not found.</div>
+        <?php else: ?>
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <th>Reference</th>
+                        <td><?= relEsc($dist['reference_number']) ?></td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td class="status-<?= strtolower(relEsc($dist['status'])) ?>"><?= relEsc($dist['status']) ?></td>
+                    </tr>
+                    <tr>
+                        <th>Disaster</th>
+                        <td><?= relEsc($dist['disaster_number'] . ' - ' . $dist['disaster_name']) ?> (<?= relEsc($dist['disaster_status']) ?>)</td>
+                    </tr>
+                    <tr>
+                        <th>Evacuation center</th>
+                        <td><?= relEsc($dist['center_name']) ?> (<?= relEsc($dist['center_status']) ?>)</td>
+                    </tr>
+                    <tr>
+                        <th>Requested by</th>
+                        <td><?= relEsc($dist['requester']) ?> on <?= relEsc($dist['request_date']) ?></td>
+                    </tr>
+                    <?php if ($dist['approved_by']): ?>
+                        <tr>
+                            <th>Approved by</th>
+                            <td><?= relEsc($dist['approver']) ?> on <?= relEsc($dist['approval_date']) ?></td>
+                        </tr>
                     <?php endif; ?>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
+                    <?php if ($dist['release_date']): ?>
+                        <tr>
+                            <th>Released on</th>
+                            <td><?= relEsc($dist['release_date']) ?></td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
 
-        <?php if ($dist['status'] === 'Approved'): ?>
-            <p style="margin-top:16px"><a href="relief_release.php?id=<?= (int) $id ?>"><strong>Release items &rarr;</strong></a></p>
-        <?php elseif ($dist['status'] === 'Released'): ?>
-            <p style="margin-top:16px"><a href="relief_acknowledge.php?id=<?= (int) $id ?>">Beneficiary acknowledgment &rarr;</a></p>
-        <?php endif; ?>
+            <h2>Items requested</h2>
+            <?php $waiting = $dist['status'] === 'Requested';
+            $short = false; ?>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th><?php if ($dist['status'] === 'Released'): ?><th>Household</th>
+                            <th>Signed</th><?php endif; ?>
+                        <?php if ($waiting): ?><th>In stock (not expired)</th>
+                            <th>Reserved by others</th>
+                            <th>Available</th>
+                            <th>Check</th><?php endif; ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($lines as $ln): ?>
+                        <tr>
+                            <td><?= relEsc($ln['item_name']) ?></td>
+                            <td><?= (int) $ln['quantity'] ?> <?= relEsc($ln['unit']) ?></td>
+                            <?php if ($dist['status'] === 'Released'): ?><td>#<?= (int) $ln['household_id'] ?></td>
+                                <td class="<?= $ln['signature_on_file'] ? 'ack-yes' : 'ack-no' ?>"><?= $ln['signature_on_file'] ? 'Yes' : 'Not yet' ?></td><?php endif; ?>
+                            <?php if ($waiting):
+                                $iid = (int) $ln['relief_item_id'];
+                                $stock = relUsable($conn, $iid); // expired items do not count
+                                $res = relReserved($conn, $iid, $id);
+                                $avail = $stock - $res;
+                                $enough = (int) $ln['quantity'] <= $avail;
+                                if (!$enough) $short = true; ?>
+                                <td><?= $stock ?></td>
+                                <td><?= $res ?></td>
+                                <td><?= $avail ?></td>
+                                <td class="<?= $enough ? 'stock-in' : 'stock-out' ?>"><?= $enough ? 'Enough' : 'Short by ' . ((int) $ln['quantity'] - $avail) ?></td>
+                            <?php endif; ?>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
 
-        <?php if ($waiting): ?>
-            <?php if ($short): ?><div class="error-box">Some items are short, so this request cannot be approved yet. Record more receipts or reject it.</div><?php endif; ?>
-
-            <?php if (authCan('approve')): ?>
-            <form method="post" style="margin-top:16px">
-                <input type="hidden" name="distribution_id" value="<?= (int) $id ?>">
-                <button type="submit" name="action" value="approve">Approve</button>
-            </form>
-
-            <form method="post" style="margin-top:12px" onsubmit="return confirm('Reject this request?');">
-                <input type="hidden" name="distribution_id" value="<?= (int) $id ?>">
-                <label>Reason for rejecting
-                    <input type="text" name="reason" maxlength="200" value="<?= relEsc($_POST['reason'] ?? '') ?>">
-                </label>
-                <p><button type="submit" name="action" value="reject">Reject</button></p>
-            </form>
-
+            <?php if ($dist['status'] === 'Approved'): ?>
+                <p style="margin-top:16px"><a href="relief_release.php?id=<?= (int) $id ?>"><strong>Release items &rarr;</strong></a></p>
+            <?php elseif ($dist['status'] === 'Released'): ?>
+                <p style="margin-top:16px"><a href="relief_acknowledge.php?id=<?= (int) $id ?>">Beneficiary acknowledgment &rarr;</a></p>
             <?php endif; ?>
 
-            <form method="post" onsubmit="return confirm('Cancel this request?');">
-                <input type="hidden" name="distribution_id" value="<?= (int) $id ?>">
-                <button type="submit" name="action" value="cancel">Cancel request</button>
-            </form>
+            <?php if ($waiting): ?>
+                <?php if ($short): ?><div class="error-box">Some items are short, so this request cannot be approved yet. Record more receipts or reject it.</div><?php endif; ?>
+
+                <?php if (authCan('approve')): ?>
+                    <form method="post" style="margin-top:16px">
+                        <input type="hidden" name="distribution_id" value="<?= (int) $id ?>">
+                        <button type="submit" name="action" value="approve">Approve</button>
+                    </form>
+
+                    <form method="post" style="margin-top:12px" onsubmit="return confirm('Reject this request?');">
+                        <input type="hidden" name="distribution_id" value="<?= (int) $id ?>">
+                        <label>Reason for rejecting
+                            <input type="text" name="reason" maxlength="200" value="<?= relEsc($_POST['reason'] ?? '') ?>">
+                        </label>
+                        <p><button type="submit" name="action" value="reject">Reject</button></p>
+                    </form>
+
+                <?php endif; ?>
+
+                <form method="post" onsubmit="return confirm('Cancel this request?');">
+                    <input type="hidden" name="distribution_id" value="<?= (int) $id ?>">
+                    <button type="submit" name="action" value="cancel">Cancel request</button>
+                </form>
+            <?php endif; ?>
         <?php endif; ?>
-    <?php endif; ?>
-</main>
-<?php include 'includes/footer.php'; ?>
+    </main>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

@@ -13,7 +13,10 @@ $id = (int) ($_POST['relief_item_id'] ?? $_GET['id'] ?? 0);
 $item = null;
 if ($id > 0) {
     $item = dbGetById($conn, 'relief_items', 'relief_item_id', $id);
-    if (!$item) { $errors[] = 'That relief item does not exist.'; $id = 0; }
+    if (!$item) {
+        $errors[] = 'That relief item does not exist.';
+        $id = 0;
+    }
 }
 
 $f = [
@@ -23,7 +26,8 @@ $f = [
     'min_stock_level' => $item['min_stock_level'] ?? '0',
 ];
 
-function relSummary($d) {
+function relSummary($d)
+{
     return ($d['item_name'] ?? '') . ' | ' . ($d['description'] ?? '') . ' | unit ' . ($d['unit'] ?? '') . ' | min ' . ($d['min_stock_level'] ?? '');
 }
 
@@ -39,9 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ]));
 
     if (!$errors) {
-        $dup = relQuery($conn,
+        $dup = relQuery(
+            $conn,
             "SELECT COUNT(*) AS total FROM relief_items WHERE LOWER(item_name) = LOWER(?) AND relief_item_id <> ?",
-            'si', [$f['item_name'], $id]);
+            'si',
+            [$f['item_name'], $id]
+        );
         if ((int) $dup[0]['total'] > 0) $errors[] = 'A relief item with that name already exists.';
     }
 
@@ -59,40 +66,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newId = dbInsert($conn, 'relief_items', $data);
             logAudit($conn, $currentUserId, 'Added relief item', 'relief_items', null, relSummary($data), 'RLI-' . $newId);
         }
-        header('Location: relief_monitor.php?saved=1'); exit;
+        header('Location: relief_monitor.php?saved=1');
+        exit;
     }
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title><?= $id ? 'Edit Relief Item' : 'Register Relief Item' ?></title>
-    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
-<main>
-    <h1><?= $id ? 'Edit Relief Item' : 'Register Relief Item' ?></h1>
-    <?php foreach ($errors as $err): ?><div class="error-box"><?= relEsc($err) ?></div><?php endforeach; ?>
+    <?php include 'includes/header.php'; ?>
+    <main>
+        <h1><?= $id ? 'Edit Relief Item' : 'Register Relief Item' ?></h1>
+        <?php foreach ($errors as $err): ?><div class="error-box"><?= relEsc($err) ?></div><?php endforeach; ?>
 
-    <form method="post">
-        <input type="hidden" name="relief_item_id" value="<?= (int) $id ?>">
+        <form method="post">
+            <input type="hidden" name="relief_item_id" value="<?= (int) $id ?>">
 
-        <?php if ($item): ?>
-            <p>In stock: <strong><?= relStock($conn, $id) ?> <?= relEsc($item['unit']) ?></strong>
-               (changes only when you <a href="relief_receipt.php?relief_item_id=<?= (int) $id ?>">record a receipt</a>)</p>
-        <?php endif; ?>
+            <?php if ($item): ?>
+                <p>In stock: <strong><?= relStock($conn, $id) ?> <?= relEsc($item['unit']) ?></strong>
+                    (changes only when you <a href="relief_receipt.php?relief_item_id=<?= (int) $id ?>">record a receipt</a>)</p>
+            <?php endif; ?>
 
-        <label>Item name <input type="text" name="item_name" maxlength="100" value="<?= relEsc($f['item_name']) ?>"></label>
-        <label>Description (optional) <input type="text" name="description" maxlength="255" value="<?= relEsc($f['description']) ?>"></label>
-        <label>Unit (pcs, kg, box...) <input type="text" name="unit" maxlength="20" value="<?= relEsc($f['unit']) ?>"></label>
-        <label>Minimum stock level <input type="number" name="min_stock_level" min="0" value="<?= relEsc($f['min_stock_level']) ?>"></label>
+            <label>Item name <input type="text" name="item_name" maxlength="100" value="<?= relEsc($f['item_name']) ?>"></label>
+            <label>Description (optional) <input type="text" name="description" maxlength="255" value="<?= relEsc($f['description']) ?>"></label>
+            <label>Unit (pcs, kg, box...) <input type="text" name="unit" maxlength="20" value="<?= relEsc($f['unit']) ?>"></label>
+            <label>Minimum stock level <input type="number" name="min_stock_level" min="0" value="<?= relEsc($f['min_stock_level']) ?>"></label>
 
-        <p><button type="submit"><?= $id ? 'Update' : 'Register' ?></button>
-           <a href="relief_monitor.php">Back to relief inventory</a></p>
-    </form>
-</main>
-<?php include 'includes/footer.php'; ?>
+            <p><button type="submit"><?= $id ? 'Update' : 'Register' ?></button>
+                <a href="relief_monitor.php">Back to relief inventory</a>
+            </p>
+        </form>
+    </main>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

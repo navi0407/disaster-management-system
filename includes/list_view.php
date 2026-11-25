@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Generic search box + table renderer — reusable across every module's
  * "search and monitoring" page.
@@ -8,14 +9,16 @@
  *   renderTable(['ID', 'Type Name', 'Description'], $rows);
  */
 
-function renderSearchBox($currentQuery = '') {
+function renderSearchBox($currentQuery = '')
+{
     echo '<form method="get" class="search-box">';
     echo '<input type="text" name="q" placeholder="Search..." value="' . htmlspecialchars($currentQuery) . '">';
     echo '<button type="submit">Search</button>';
     echo '</form>';
 }
 
-function renderTable($columns, $rows) {
+function renderTable($columns, $rows)
+{
     echo '<table class="data-table"><thead><tr>';
     foreach ($columns as $label) {
         echo '<th>' . htmlspecialchars($label) . '</th>';

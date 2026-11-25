@@ -35,9 +35,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Lab 50: duplicate records. The same name in the same area that is still open is almost surely a double entry.
     if (!$errors) {
-        $dup = dbQueryAll($conn,
+        $dup = dbQueryAll(
+            $conn,
             "SELECT disaster_number FROM disasters WHERE LOWER(disaster_name) = LOWER(?) AND LOWER(area_affected) = LOWER(?)
-             AND status <> 'Closed' LIMIT 1", 'ss', [$f['disaster_name'], $f['area_affected']]);
+             AND status <> 'Closed' LIMIT 1",
+            'ss',
+            [$f['disaster_name'], $f['area_affected']]
+        );
         if ($dup) $errors[] = 'This disaster is already registered as ' . $dup[0]['disaster_number'] . ' and is still open.';
     }
 
@@ -69,53 +73,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Register Disaster</title>
-    <link rel="stylesheet" href="<?= errEsc(authCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
+    <?php include 'includes/header.php'; ?>
 
-<main>
-    <h1>Register a Disaster</h1>
+    <main>
+        <h1>Register a Disaster</h1>
 
-    <?php foreach ($errors as $err): ?><div class="error-box"><?= errEsc($err) ?></div><?php endforeach; ?>
+        <?php foreach ($errors as $err): ?><div class="error-box"><?= errEsc($err) ?></div><?php endforeach; ?>
 
-    <?php if (!$types): ?>
-        <div class="error-box">There is no active disaster type. <a href="disaster_types.php">Add or activate one first.</a></div>
-    <?php endif; ?>
+        <?php if (!$types): ?>
+            <div class="error-box">There is no active disaster type. <a href="disaster_types.php">Add or activate one first.</a></div>
+        <?php endif; ?>
 
-    <form method="post">
-        <label>Disaster Name</label>
-        <input type="text" name="disaster_name" maxlength="100" placeholder="e.g. Typhoon Egay" value="<?= errEsc($f['disaster_name']) ?>">
+        <form method="post">
+            <label>Disaster Name</label>
+            <input type="text" name="disaster_name" maxlength="100" placeholder="e.g. Typhoon Egay" value="<?= errEsc($f['disaster_name']) ?>">
 
-        <label>Disaster Type</label>
-        <select name="disaster_type_id">
-            <option value=""> Select type </option>
-            <?php foreach ($types as $t): ?>
-                <option value="<?= (int) $t['disaster_type_id'] ?>" <?= $f['disaster_type_id'] === (string) $t['disaster_type_id'] ? 'selected' : '' ?>><?= errEsc($t['type_name']) ?></option>
-            <?php endforeach; ?>
-        </select>
+            <label>Disaster Type</label>
+            <select name="disaster_type_id">
+                <option value=""> Select type </option>
+                <?php foreach ($types as $t): ?>
+                    <option value="<?= (int) $t['disaster_type_id'] ?>" <?= $f['disaster_type_id'] === (string) $t['disaster_type_id'] ? 'selected' : '' ?>><?= errEsc($t['type_name']) ?></option>
+                <?php endforeach; ?>
+            </select>
 
-        <label>Area Affected (barangay)</label>
-        <input type="text" name="area_affected" maxlength="100" placeholder="e.g. Barangay Bonfal Proper" value="<?= errEsc($f['area_affected']) ?>">
+            <label>Area Affected (barangay)</label>
+            <input type="text" name="area_affected" maxlength="100" placeholder="e.g. Barangay Bonfal Proper" value="<?= errEsc($f['area_affected']) ?>">
 
-        <label>Severity</label>
-        <select name="severity">
-            <option value=""> Select severity </option>
-            <?php foreach ($severities as $s): ?>
-                <option <?= $f['severity'] === $s ? 'selected' : '' ?>><?= $s ?></option>
-            <?php endforeach; ?>
-        </select>
+            <label>Severity</label>
+            <select name="severity">
+                <option value=""> Select severity </option>
+                <?php foreach ($severities as $s): ?>
+                    <option <?= $f['severity'] === $s ? 'selected' : '' ?>><?= $s ?></option>
+                <?php endforeach; ?>
+            </select>
 
-        <label>Date Started (optional)</label>
-        <input type="datetime-local" name="date_started" max="<?= date('Y-m-d\TH:i') ?>" value="<?= errEsc($f['date_started']) ?>">
+            <label>Date Started (optional)</label>
+            <input type="datetime-local" name="date_started" max="<?= date('Y-m-d\TH:i') ?>" value="<?= errEsc($f['date_started']) ?>">
 
-        <button type="submit">Register Disaster</button>
-    </form>
-</main>
+            <button type="submit">Register Disaster</button>
+        </form>
+    </main>
 
-<?php include 'includes/footer.php'; ?>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

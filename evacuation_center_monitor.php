@@ -70,87 +70,99 @@ $totalOccupied = array_sum(array_column($centers, 'current_occupancy'));
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Evacuation Center Monitoring</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
+    <?php include 'includes/header.php'; ?>
 
-<main>
-    <h1>Evacuation Center Monitoring</h1>
+    <main>
+        <h1>Evacuation Center Monitoring</h1>
 
-    <?php if (isset($_GET['registered'])): ?>
-        <div class="success-box">Evacuation center registered successfully.</div>
-    <?php endif; ?>
-    <?php if (isset($_GET['updated'])): ?>
-        <div class="success-box">Evacuation center updated successfully.</div>
-    <?php endif; ?>
-
-    <p><a href="evacuation_center_register.php">+ Register a new evacuation center</a></p>
-
-    <form method="get" class="filter-bar">
-        <input type="text" name="q" placeholder="Search name, barangay, or location..." value="<?= htmlspecialchars($query) ?>">
-        <select name="status">
-            <option value="">All Statuses</option>
-            <?php foreach (['Active', 'Inactive'] as $s): ?>
-                <option <?= $statusFilter === $s ? 'selected' : '' ?>><?= $s ?></option>
-            <?php endforeach; ?>
-        </select>
-        <select name="capacity_state">
-            <option value="">All Capacity Levels</option>
-            <?php foreach (['Available', 'Nearly Full', 'Full'] as $s): ?>
-                <option <?= $capacityFilter === $s ? 'selected' : '' ?>><?= $s ?></option>
-            <?php endforeach; ?>
-        </select>
-        <button type="submit">Filter</button>
-    </form>
-
-    <p>Showing <strong><?= count($centers) ?></strong> center(s) &nbsp;|&nbsp;
-       Total capacity: <strong><?= $totalCapacity ?></strong> &nbsp;|&nbsp;
-       Currently sheltered: <strong><?= $totalOccupied ?></strong></p>
-
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Center</th><th>Barangay</th><th>Capacity</th><th>Occupied</th>
-                <th>Available</th><th>Occupancy</th><th>Capacity Level</th><th>Status</th><th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php if (empty($centers)): ?>
-            <tr><td colspan="9">No records found.</td></tr>
+        <?php if (isset($_GET['registered'])): ?>
+            <div class="success-box">Evacuation center registered successfully.</div>
         <?php endif; ?>
-        <?php foreach ($centers as $c): ?>
-            <tr>
-                <td>
-                    <?= htmlspecialchars($c['center_name']) ?><br>
-                    <small><?= htmlspecialchars($c['location']) ?></small>
-                </td>
-                <td><?= htmlspecialchars($c['barangay']) ?></td>
-                <td><?= (int) $c['capacity'] ?></td>
-                <td><?= (int) $c['current_occupancy'] ?></td>
-                <td><?= $c['available'] ?></td>
-                <td>
-                    <div class="occupancy-bar">
-                        <div class="occupancy-fill state-<?= strtolower(str_replace(' ', '-', $c['state'])) ?>"
-                             style="width: <?= min(100, $c['percent']) ?>%"></div>
-                    </div>
-                    <?= $c['percent'] ?>%
-                </td>
-                <td class="level-<?= strtolower(str_replace(' ', '-', $c['state'])) ?>"><?= $c['state'] ?></td>
-                <td class="status-<?= strtolower($c['status']) ?>"><?= htmlspecialchars($c['status']) ?></td>
-                <td>
-                    <a href="evacuation_center_register.php?edit=<?= $c['center_id'] ?>">Edit</a> |
-                    <a href="?toggle=<?= $c['center_id'] ?>"><?= $c['status'] === 'Active' ? 'Deactivate' : 'Activate' ?></a>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-</main>
+        <?php if (isset($_GET['updated'])): ?>
+            <div class="success-box">Evacuation center updated successfully.</div>
+        <?php endif; ?>
 
-<?php include 'includes/footer.php'; ?>
+        <p><a href="evacuation_center_register.php">+ Register a new evacuation center</a></p>
+
+        <form method="get" class="filter-bar">
+            <input type="text" name="q" placeholder="Search name, barangay, or location..." value="<?= htmlspecialchars($query) ?>">
+            <select name="status">
+                <option value="">All Statuses</option>
+                <?php foreach (['Active', 'Inactive'] as $s): ?>
+                    <option <?= $statusFilter === $s ? 'selected' : '' ?>><?= $s ?></option>
+                <?php endforeach; ?>
+            </select>
+            <select name="capacity_state">
+                <option value="">All Capacity Levels</option>
+                <?php foreach (['Available', 'Nearly Full', 'Full'] as $s): ?>
+                    <option <?= $capacityFilter === $s ? 'selected' : '' ?>><?= $s ?></option>
+                <?php endforeach; ?>
+            </select>
+            <button type="submit">Filter</button>
+        </form>
+
+        <p>Showing <strong><?= count($centers) ?></strong> center(s) &nbsp;|&nbsp;
+            Total capacity: <strong><?= $totalCapacity ?></strong> &nbsp;|&nbsp;
+            Currently sheltered: <strong><?= $totalOccupied ?></strong></p>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Center</th>
+                    <th>Barangay</th>
+                    <th>Capacity</th>
+                    <th>Occupied</th>
+                    <th>Available</th>
+                    <th>Occupancy</th>
+                    <th>Capacity Level</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($centers)): ?>
+                    <tr>
+                        <td colspan="9">No records found.</td>
+                    </tr>
+                <?php endif; ?>
+                <?php foreach ($centers as $c): ?>
+                    <tr>
+                        <td>
+                            <?= htmlspecialchars($c['center_name']) ?><br>
+                            <small><?= htmlspecialchars($c['location']) ?></small>
+                        </td>
+                        <td><?= htmlspecialchars($c['barangay']) ?></td>
+                        <td><?= (int) $c['capacity'] ?></td>
+                        <td><?= (int) $c['current_occupancy'] ?></td>
+                        <td><?= $c['available'] ?></td>
+                        <td>
+                            <div class="occupancy-bar">
+                                <div class="occupancy-fill state-<?= strtolower(str_replace(' ', '-', $c['state'])) ?>"
+                                    style="width: <?= min(100, $c['percent']) ?>%"></div>
+                            </div>
+                            <?= $c['percent'] ?>%
+                        </td>
+                        <td class="level-<?= strtolower(str_replace(' ', '-', $c['state'])) ?>"><?= $c['state'] ?></td>
+                        <td class="status-<?= strtolower($c['status']) ?>"><?= htmlspecialchars($c['status']) ?></td>
+                        <td>
+                            <a href="evacuation_center_register.php?edit=<?= $c['center_id'] ?>">Edit</a> |
+                            <a href="?toggle=<?= $c['center_id'] ?>"><?= $c['status'] === 'Active' ? 'Deactivate' : 'Activate' ?></a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </main>
+
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

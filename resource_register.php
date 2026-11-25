@@ -13,7 +13,10 @@ $id = (int) ($_POST['resource_id'] ?? $_GET['id'] ?? 0);
 $resource = null;
 if ($id > 0) {
     $resource = dbGetById($conn, 'resources', 'resource_id', $id);
-    if (!$resource) { $errors[] = 'That resource does not exist.'; $id = 0; }
+    if (!$resource) {
+        $errors[] = 'That resource does not exist.';
+        $id = 0;
+    }
 }
 $categories = dbGetAll($conn, 'resource_categories', 'category_name');
 
@@ -28,9 +31,10 @@ $f = [
     'status'           => $resource['status'] ?? 'Active',
 ];
 
-function resSummary($d) {
+function resSummary($d)
+{
     return ($d['resource_name'] ?? '') . ' | unit ' . ($d['unit'] ?? '') . ' | min ' . ($d['min_stock_level'] ?? '')
-         . ' | ' . ($d['storage_location'] ?? '') . ' | exp ' . ($d['expiration_date'] ?? '') . ' | ' . ($d['status'] ?? '');
+        . ' | ' . ($d['storage_location'] ?? '') . ' | exp ' . ($d['expiration_date'] ?? '') . ' | ' . ($d['status'] ?? '');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -51,9 +55,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ]));
 
     if (!$errors) {
-        $dup = resQuery($conn,
+        $dup = resQuery(
+            $conn,
             "SELECT COUNT(*) AS total FROM resources WHERE LOWER(resource_name) = LOWER(?) AND category_id = ? AND resource_id <> ?",
-            'sii', [$f['resource_name'], (int) $f['category_id'], $id]);
+            'sii',
+            [$f['resource_name'], (int) $f['category_id'], $id]
+        );
         if ((int) $dup[0]['total'] > 0) $errors[] = 'A resource with that name already exists in this category.';
     }
 
@@ -76,66 +83,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newId = dbInsert($conn, 'resources', $data);
             logAudit($conn, $currentUserId, 'Added resource', 'resources', null, resSummary($data), $data['resource_code']);
         }
-        header('Location: resource_monitor.php?saved=1'); exit;
+        header('Location: resource_monitor.php?saved=1');
+        exit;
     }
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title><?= $id ? 'Edit Resource' : 'Register Resource' ?></title>
-    <link rel="stylesheet" href="<?= resEsc(resCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
-<main>
-    <h1><?= $id ? 'Edit Resource' : 'Register Resource' ?></h1>
-    <?php foreach ($errors as $err): ?><div class="error-box"><?= resEsc($err) ?></div><?php endforeach; ?>
+    <?php include 'includes/header.php'; ?>
+    <main>
+        <h1><?= $id ? 'Edit Resource' : 'Register Resource' ?></h1>
+        <?php foreach ($errors as $err): ?><div class="error-box"><?= resEsc($err) ?></div><?php endforeach; ?>
 
-    <?php if (!$categories): ?>
-        <div class="error-box">There are no categories yet. <a href="resource_categories.php">Add a category first.</a></div>
-    <?php endif; ?>
-
-    <form method="post">
-        <input type="hidden" name="resource_id" value="<?= (int) $id ?>">
-
-        <?php if ($resource): ?>
-            <p>Code: <strong><?= resEsc($resource['resource_code']) ?></strong>
-               | On hand: <strong><?= (int) $resource['quantity_on_hand'] ?> <?= resEsc($resource['unit']) ?></strong>
-               (changes only through <a href="resource_transaction.php?resource_id=<?= (int) $id ?>">receive or release</a>)</p>
+        <?php if (!$categories): ?>
+            <div class="error-box">There are no categories yet. <a href="resource_categories.php">Add a category first.</a></div>
         <?php endif; ?>
 
-        <label>Resource name <input type="text" name="resource_name" maxlength="100" value="<?= resEsc($f['resource_name']) ?>"></label>
+        <form method="post">
+            <input type="hidden" name="resource_id" value="<?= (int) $id ?>">
 
-        <label>Category
-            <select name="category_id">
-                <option value=""> choose </option>
-                <?php foreach ($categories as $c): ?>
-                    <option value="<?= (int) $c['category_id'] ?>" <?= (string) $f['category_id'] === (string) $c['category_id'] ? 'selected' : '' ?>><?= resEsc($c['category_name']) ?></option>
-                <?php endforeach; ?>
-            </select>
-        </label>
+            <?php if ($resource): ?>
+                <p>Code: <strong><?= resEsc($resource['resource_code']) ?></strong>
+                    | On hand: <strong><?= (int) $resource['quantity_on_hand'] ?> <?= resEsc($resource['unit']) ?></strong>
+                    (changes only through <a href="resource_transaction.php?resource_id=<?= (int) $id ?>">receive or release</a>)</p>
+            <?php endif; ?>
 
-        <label>Unit (pcs, kg, box...) <input type="text" name="unit" maxlength="20" value="<?= resEsc($f['unit']) ?>"></label>
-        <label>Minimum stock level <input type="number" name="min_stock_level" min="0" value="<?= resEsc($f['min_stock_level']) ?>"></label>
-        <label>Storage location <input type="text" name="storage_location" maxlength="100" value="<?= resEsc($f['storage_location']) ?>"></label>
-        <label>Expiration date (optional) <input type="date" name="expiration_date" value="<?= resEsc($f['expiration_date']) ?>"></label>
+            <label>Resource name <input type="text" name="resource_name" maxlength="100" value="<?= resEsc($f['resource_name']) ?>"></label>
 
-        <?php if ($id): ?>
-        <label>Status
-            <select name="status">
-                <?php foreach (['Active', 'Inactive'] as $s): ?>
-                    <option value="<?= $s ?>" <?= $f['status'] === $s ? 'selected' : '' ?>><?= $s ?></option>
-                <?php endforeach; ?>
-            </select>
-        </label>
-        <?php endif; ?>
+            <label>Category
+                <select name="category_id">
+                    <option value=""> choose </option>
+                    <?php foreach ($categories as $c): ?>
+                        <option value="<?= (int) $c['category_id'] ?>" <?= (string) $f['category_id'] === (string) $c['category_id'] ? 'selected' : '' ?>><?= resEsc($c['category_name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
 
-        <p><button type="submit"><?= $id ? 'Update' : 'Register' ?></button>
-           <a href="resource_monitor.php">Back to inventory</a></p>
-    </form>
-</main>
-<?php include 'includes/footer.php'; ?>
+            <label>Unit (pcs, kg, box...) <input type="text" name="unit" maxlength="20" value="<?= resEsc($f['unit']) ?>"></label>
+            <label>Minimum stock level <input type="number" name="min_stock_level" min="0" value="<?= resEsc($f['min_stock_level']) ?>"></label>
+            <label>Storage location <input type="text" name="storage_location" maxlength="100" value="<?= resEsc($f['storage_location']) ?>"></label>
+            <label>Expiration date (optional) <input type="date" name="expiration_date" value="<?= resEsc($f['expiration_date']) ?>"></label>
+
+            <?php if ($id): ?>
+                <label>Status
+                    <select name="status">
+                        <?php foreach (['Active', 'Inactive'] as $s): ?>
+                            <option value="<?= $s ?>" <?= $f['status'] === $s ? 'selected' : '' ?>><?= $s ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+            <?php endif; ?>
+
+            <p><button type="submit"><?= $id ? 'Update' : 'Register' ?></button>
+                <a href="resource_monitor.php">Back to inventory</a>
+            </p>
+        </form>
+    </main>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

@@ -112,119 +112,143 @@ $allCenters = dbQueryAll($conn, "SELECT center_id, center_name FROM evacuation_c
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Evacuee Monitoring</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
+    <?php include 'includes/header.php'; ?>
 
-<main>
-    <h1>Evacuee Monitoring</h1>
+    <main>
+        <h1>Evacuee Monitoring</h1>
 
-    <?php if (isset($_GET['checked_in'])): ?>
-        <div class="success-box">Evacuee checked in successfully.</div>
-    <?php endif; ?>
-    <?php if (isset($_GET['checked_out'])): ?>
-        <div class="success-box">Evacuee checked out successfully.</div>
-    <?php endif; ?>
-
-    <p><a href="evacuee_register.php">+ Check in an evacuee</a> &nbsp;|&nbsp; <a href="evacuation_center_monitor.php">View evacuation centers</a></p>
-
-    <p>
-        Currently sheltered: <strong><?= (int) $totals['sheltered'] ?></strong> &nbsp;|&nbsp;
-        From <strong><?= (int) $totals['households'] ?></strong> household(s) &nbsp;|&nbsp;
-        Vulnerable: <strong><?= (int) $totals['vulnerable'] ?></strong> &nbsp;|&nbsp;
-        Already checked out: <strong><?= (int) $totals['checked_out'] ?></strong>
-    </p>
-
-    <h2>Per Evacuation Center</h2>
-    <table class="data-table">
-        <thead>
-            <tr><th>Center</th><th>Sheltered</th><th>Households</th><th>Vulnerable</th><th>Capacity</th><th>Space Left</th></tr>
-        </thead>
-        <tbody>
-        <?php if (empty($centerSummary)): ?>
-            <tr><td colspan="6">No evacuation centers yet.</td></tr>
+        <?php if (isset($_GET['checked_in'])): ?>
+            <div class="success-box">Evacuee checked in successfully.</div>
         <?php endif; ?>
-        <?php foreach ($centerSummary as $c): ?>
-            <tr>
-                <td><?= htmlspecialchars($c['center_name']) ?></td>
-                <td><?= (int) $c['occupied'] ?></td>
-                <td><?= (int) $c['households'] ?></td>
-                <td><?= (int) $c['vulnerable'] ?></td>
-                <td><?= (int) $c['capacity'] ?></td>
-                <td><?= max(0, (int) $c['capacity'] - (int) $c['occupied']) ?></td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-
-    <h2>Evacuee Records</h2>
-    <form method="get" class="filter-bar">
-        <input type="text" name="q" placeholder="Search resident name..." value="<?= htmlspecialchars($query) ?>">
-        <select name="disaster_id">
-            <option value="">All Disasters</option>
-            <?php foreach ($allDisasters as $d): ?>
-                <option value="<?= $d['disaster_id'] ?>" <?= $disasterFilter == $d['disaster_id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($d['disaster_number'] . ' - ' . $d['disaster_name']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-        <select name="center_id">
-            <option value="">All Centers</option>
-            <?php foreach ($allCenters as $c): ?>
-                <option value="<?= $c['center_id'] ?>" <?= $centerFilter == $c['center_id'] ? 'selected' : '' ?>><?= htmlspecialchars($c['center_name']) ?></option>
-            <?php endforeach; ?>
-        </select>
-        <select name="status">
-            <option value="">All Statuses</option>
-            <?php foreach (['Checked-in', 'Checked-out'] as $s): ?>
-                <option <?= $statusFilter === $s ? 'selected' : '' ?>><?= $s ?></option>
-            <?php endforeach; ?>
-        </select>
-        <select name="vulnerable">
-            <option value="">Everyone</option>
-            <option value="1" <?= $vulnFilter === '1' ? 'selected' : '' ?>>Vulnerable only</option>
-        </select>
-        <button type="submit">Filter</button>
-    </form>
-
-    <table class="data-table">
-        <thead>
-            <tr><th>Resident</th><th>Vulnerability</th><th>Disaster</th><th>Center</th><th>Special Needs</th><th>Checked In</th><th>Checked Out</th><th>Status</th><th>Action</th></tr>
-        </thead>
-        <tbody>
-        <?php if (empty($evacuees)): ?>
-            <tr><td colspan="9">No records found.</td></tr>
+        <?php if (isset($_GET['checked_out'])): ?>
+            <div class="success-box">Evacuee checked out successfully.</div>
         <?php endif; ?>
-        <?php foreach ($evacuees as $e): ?>
-            <tr>
-                <td><?= htmlspecialchars($e['first_name'] . ' ' . $e['last_name']) ?></td>
-                <td><?= htmlspecialchars($e['vulnerability_type']) ?></td>
-                <td><?= htmlspecialchars($e['disaster_number'] ?? '') ?></td>
-                <td><?= htmlspecialchars($e['center_name'] ?? '') ?></td>
-                <td><?= htmlspecialchars($e['special_needs'] ?? '') ?></td>
-                <td><?= htmlspecialchars($e['date_checked_in']) ?></td>
-                <td><?= htmlspecialchars($e['date_checked_out'] ?? '') ?></td>
-                <td class="status-<?= strtolower($e['status']) ?>"><?= htmlspecialchars($e['status']) ?></td>
-                <td>
-                    <?php if ($e['status'] === 'Checked-in'): ?>
-                        <form method="post" class="inline-form" onsubmit="return confirm('Check this evacuee out?');">
-                            <input type="hidden" name="checkout_id" value="<?= $e['evacuee_id'] ?>">
-                            <button type="submit">Check Out</button>
-                        </form>
-                    <?php else: ?>
-                        &mdash;
-                    <?php endif; ?>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-</main>
 
-<?php include 'includes/footer.php'; ?>
+        <p><a href="evacuee_register.php">+ Check in an evacuee</a> &nbsp;|&nbsp; <a href="evacuation_center_monitor.php">View evacuation centers</a></p>
+
+        <p>
+            Currently sheltered: <strong><?= (int) $totals['sheltered'] ?></strong> &nbsp;|&nbsp;
+            From <strong><?= (int) $totals['households'] ?></strong> household(s) &nbsp;|&nbsp;
+            Vulnerable: <strong><?= (int) $totals['vulnerable'] ?></strong> &nbsp;|&nbsp;
+            Already checked out: <strong><?= (int) $totals['checked_out'] ?></strong>
+        </p>
+
+        <h2>Per Evacuation Center</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Center</th>
+                    <th>Sheltered</th>
+                    <th>Households</th>
+                    <th>Vulnerable</th>
+                    <th>Capacity</th>
+                    <th>Space Left</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($centerSummary)): ?>
+                    <tr>
+                        <td colspan="6">No evacuation centers yet.</td>
+                    </tr>
+                <?php endif; ?>
+                <?php foreach ($centerSummary as $c): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($c['center_name']) ?></td>
+                        <td><?= (int) $c['occupied'] ?></td>
+                        <td><?= (int) $c['households'] ?></td>
+                        <td><?= (int) $c['vulnerable'] ?></td>
+                        <td><?= (int) $c['capacity'] ?></td>
+                        <td><?= max(0, (int) $c['capacity'] - (int) $c['occupied']) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <h2>Evacuee Records</h2>
+        <form method="get" class="filter-bar">
+            <input type="text" name="q" placeholder="Search resident name..." value="<?= htmlspecialchars($query) ?>">
+            <select name="disaster_id">
+                <option value="">All Disasters</option>
+                <?php foreach ($allDisasters as $d): ?>
+                    <option value="<?= $d['disaster_id'] ?>" <?= $disasterFilter == $d['disaster_id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($d['disaster_number'] . ' - ' . $d['disaster_name']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <select name="center_id">
+                <option value="">All Centers</option>
+                <?php foreach ($allCenters as $c): ?>
+                    <option value="<?= $c['center_id'] ?>" <?= $centerFilter == $c['center_id'] ? 'selected' : '' ?>><?= htmlspecialchars($c['center_name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <select name="status">
+                <option value="">All Statuses</option>
+                <?php foreach (['Checked-in', 'Checked-out'] as $s): ?>
+                    <option <?= $statusFilter === $s ? 'selected' : '' ?>><?= $s ?></option>
+                <?php endforeach; ?>
+            </select>
+            <select name="vulnerable">
+                <option value="">Everyone</option>
+                <option value="1" <?= $vulnFilter === '1' ? 'selected' : '' ?>>Vulnerable only</option>
+            </select>
+            <button type="submit">Filter</button>
+        </form>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Resident</th>
+                    <th>Vulnerability</th>
+                    <th>Disaster</th>
+                    <th>Center</th>
+                    <th>Special Needs</th>
+                    <th>Checked In</th>
+                    <th>Checked Out</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($evacuees)): ?>
+                    <tr>
+                        <td colspan="9">No records found.</td>
+                    </tr>
+                <?php endif; ?>
+                <?php foreach ($evacuees as $e): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($e['first_name'] . ' ' . $e['last_name']) ?></td>
+                        <td><?= htmlspecialchars($e['vulnerability_type']) ?></td>
+                        <td><?= htmlspecialchars($e['disaster_number'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($e['center_name'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($e['special_needs'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($e['date_checked_in']) ?></td>
+                        <td><?= htmlspecialchars($e['date_checked_out'] ?? '') ?></td>
+                        <td class="status-<?= strtolower($e['status']) ?>"><?= htmlspecialchars($e['status']) ?></td>
+                        <td>
+                            <?php if ($e['status'] === 'Checked-in'): ?>
+                                <form method="post" class="inline-form" onsubmit="return confirm('Check this evacuee out?');">
+                                    <input type="hidden" name="checkout_id" value="<?= $e['evacuee_id'] ?>">
+                                    <button type="submit">Check Out</button>
+                                </form>
+                            <?php else: ?>
+                                &mdash;
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </main>
+
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

@@ -20,7 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     } else {
         dbDelete($conn, 'relief_items', 'relief_item_id', $id);
         logAudit($conn, $currentUserId, 'Deleted relief item', 'relief_items', $row['item_name'], null, 'RLI-' . $id);
-        header('Location: relief_monitor.php?deleted=1'); exit;
+        header('Location: relief_monitor.php?deleted=1');
+        exit;
     }
 }
 
@@ -67,83 +68,98 @@ foreach ($all as $r) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Relief Inventory</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
-<main class="wide">
-    <h1>Relief Inventory</h1>
-    <p>
-        <a href="relief_item_register.php">+ Register relief item</a> |
-        <a href="relief_receipt.php">Record a receipt</a> |
-        <a href="relief_receipt_monitor.php">Receipt history</a>
-    </p>
+    <?php include 'includes/header.php'; ?>
+    <main class="wide">
+        <h1>Relief Inventory</h1>
+        <p>
+            <a href="relief_item_register.php">+ Register relief item</a> |
+            <a href="relief_receipt.php">Record a receipt</a> |
+            <a href="relief_receipt_monitor.php">Receipt history</a>
+        </p>
 
-    <?php if (isset($_GET['saved'])): ?><div class="success-box">Relief item saved.</div><?php endif; ?>
-    <?php if (isset($_GET['deleted'])): ?><div class="success-box">Relief item deleted.</div><?php endif; ?>
-    <?php foreach ($errors as $err): ?><div class="error-box"><?= relEsc($err) ?></div><?php endforeach; ?>
+        <?php if (isset($_GET['saved'])): ?><div class="success-box">Relief item saved.</div><?php endif; ?>
+        <?php if (isset($_GET['deleted'])): ?><div class="success-box">Relief item deleted.</div><?php endif; ?>
+        <?php foreach ($errors as $err): ?><div class="error-box"><?= relEsc($err) ?></div><?php endforeach; ?>
 
-    <form method="get" class="filter-bar">
-        <input type="text" name="q" placeholder="Search item or description..." value="<?= relEsc($q) ?>">
-        <select name="stock">
-            <option value="">All stock levels</option>
-            <?php foreach (['In Stock', 'Low Stock', 'Out of Stock'] as $s): ?><option <?= $stockFilter === $s ? 'selected' : '' ?>><?= $s ?></option><?php endforeach; ?>
-        </select>
-        <select name="expiry">
-            <option value="">Any expiry</option>
-            <option value="expiring" <?= $expiry === 'expiring' ? 'selected' : '' ?>>Batch expiring in 30 days</option>
-            <option value="expired" <?= $expiry === 'expired' ? 'selected' : '' ?>>Has an expired batch</option>
-        </select>
-        <button type="submit">Filter</button>
-        <a href="relief_monitor.php">Clear</a>
-    </form>
+        <form method="get" class="filter-bar">
+            <input type="text" name="q" placeholder="Search item or description..." value="<?= relEsc($q) ?>">
+            <select name="stock">
+                <option value="">All stock levels</option>
+                <?php foreach (['In Stock', 'Low Stock', 'Out of Stock'] as $s): ?><option <?= $stockFilter === $s ? 'selected' : '' ?>><?= $s ?></option><?php endforeach; ?>
+            </select>
+            <select name="expiry">
+                <option value="">Any expiry</option>
+                <option value="expiring" <?= $expiry === 'expiring' ? 'selected' : '' ?>>Batch expiring in 30 days</option>
+                <option value="expired" <?= $expiry === 'expired' ? 'selected' : '' ?>>Has an expired batch</option>
+            </select>
+            <button type="submit">Filter</button>
+            <a href="relief_monitor.php">Clear</a>
+        </form>
 
-    <p><strong><?= count($rows) ?></strong> item(s) |
-       Low stock: <strong><?= $low ?></strong> |
-       Out of stock: <strong><?= $out ?></strong> |
-       Expiring or expired: <strong><?= $soon ?></strong></p>
+        <p><strong><?= count($rows) ?></strong> item(s) |
+            Low stock: <strong><?= $low ?></strong> |
+            Out of stock: <strong><?= $out ?></strong> |
+            Expiring or expired: <strong><?= $soon ?></strong></p>
 
-    <table class="data-table">
-        <thead><tr>
-            <th>Item</th><th>Unit</th><th>Received</th><th>Given out</th><th>Reserved</th><th>In stock</th><th>Min</th>
-            <th>Stock level</th><th>Next expiry</th><th>Actions</th>
-        </tr></thead>
-        <tbody>
-        <?php if (!$rows): ?><tr><td colspan="10">No records found.</td></tr><?php endif; ?>
-        <?php foreach ($rows as $r): ?>
-            <tr>
-                <td><?= relEsc($r['item_name']) ?>
-                    <?php if ($r['description']): ?><br><small><?= relEsc($r['description']) ?></small><?php endif; ?></td>
-                <td><?= relEsc($r['unit']) ?></td>
-                <td><?= (int) $r['received'] ?></td>
-                <td><?= (int) $r['distributed'] ?></td>
-                <td><?= (int) $r['reserved'] ?></td>
-                <td><strong><?= (int) $r['stock'] ?></strong></td>
-                <td><?= (int) $r['min_stock_level'] ?></td>
-                <td class="<?= relStockClass($r['level']) ?>"><?= $r['level'] ?></td>
-                <td class="<?= $r['is_soon'] ? 'expiry-soon' : '' ?>">
-                    <?= relEsc($r['next_expiry']) ?>
-                    <?php if ($r['is_expired']): ?><span class="expiry-expired"><?= (int) $r['expired_batches'] ?> expired</span><?php endif; ?>
-                </td>
-                <td>
-                    <a href="relief_item_register.php?id=<?= (int) $r['relief_item_id'] ?>">Edit</a> |
-                    <a href="relief_receipt.php?relief_item_id=<?= (int) $r['relief_item_id'] ?>">Receive</a> |
-                    <a href="relief_receipt_monitor.php?relief_item_id=<?= (int) $r['relief_item_id'] ?>">History</a>
-                    <?php if ((int) $r['received'] === 0 && (int) $r['distributed'] === 0): ?>
-                    <form method="post" style="display:inline" onsubmit="return confirm('Delete this relief item?');">
-                        <input type="hidden" name="delete_id" value="<?= (int) $r['relief_item_id'] ?>">
-                        <button type="submit">Delete</button>
-                    </form>
-                    <?php endif; ?>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-</main>
-<?php include 'includes/footer.php'; ?>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Unit</th>
+                    <th>Received</th>
+                    <th>Given out</th>
+                    <th>Reserved</th>
+                    <th>In stock</th>
+                    <th>Min</th>
+                    <th>Stock level</th>
+                    <th>Next expiry</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (!$rows): ?><tr>
+                        <td colspan="10">No records found.</td>
+                    </tr><?php endif; ?>
+                <?php foreach ($rows as $r): ?>
+                    <tr>
+                        <td><?= relEsc($r['item_name']) ?>
+                            <?php if ($r['description']): ?><br><small><?= relEsc($r['description']) ?></small><?php endif; ?></td>
+                        <td><?= relEsc($r['unit']) ?></td>
+                        <td><?= (int) $r['received'] ?></td>
+                        <td><?= (int) $r['distributed'] ?></td>
+                        <td><?= (int) $r['reserved'] ?></td>
+                        <td><strong><?= (int) $r['stock'] ?></strong></td>
+                        <td><?= (int) $r['min_stock_level'] ?></td>
+                        <td class="<?= relStockClass($r['level']) ?>"><?= $r['level'] ?></td>
+                        <td class="<?= $r['is_soon'] ? 'expiry-soon' : '' ?>">
+                            <?= relEsc($r['next_expiry']) ?>
+                            <?php if ($r['is_expired']): ?><span class="expiry-expired"><?= (int) $r['expired_batches'] ?> expired</span><?php endif; ?>
+                        </td>
+                        <td>
+                            <a href="relief_item_register.php?id=<?= (int) $r['relief_item_id'] ?>">Edit</a> |
+                            <a href="relief_receipt.php?relief_item_id=<?= (int) $r['relief_item_id'] ?>">Receive</a> |
+                            <a href="relief_receipt_monitor.php?relief_item_id=<?= (int) $r['relief_item_id'] ?>">History</a>
+                            <?php if ((int) $r['received'] === 0 && (int) $r['distributed'] === 0): ?>
+                                <form method="post" style="display:inline" onsubmit="return confirm('Delete this relief item?');">
+                                    <input type="hidden" name="delete_id" value="<?= (int) $r['relief_item_id'] ?>">
+                                    <button type="submit">Delete</button>
+                                </form>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </main>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

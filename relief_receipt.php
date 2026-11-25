@@ -42,16 +42,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $before = relStock($conn, $selected);
                 $number = relGenerateReceiptNumber($conn);
                 dbInsert($conn, 'relief_receipts', [
-                    'receipt_number' => $number, 'relief_item_id' => $selected, 'source' => $source,
-                    'quantity' => $qty, 'unit' => $item['unit'], 'date_received' => $dateReceived,
+                    'receipt_number' => $number,
+                    'relief_item_id' => $selected,
+                    'source' => $source,
+                    'quantity' => $qty,
+                    'unit' => $item['unit'],
+                    'date_received' => $dateReceived,
                     'expiration_date' => $expiration !== '' ? $expiration : null,
                 ]);
-                logAudit($conn, $currentUserId, 'Received relief items', 'relief_receipts',
-                         'In stock: ' . $before,
-                         'In stock: ' . ($before + $qty) . ' (' . $item['item_name'] . ', +' . $qty . ' ' . $item['unit'] . ' from ' . $source . ')',
-                         $number);
+                logAudit(
+                    $conn,
+                    $currentUserId,
+                    'Received relief items',
+                    'relief_receipts',
+                    'In stock: ' . $before,
+                    'In stock: ' . ($before + $qty) . ' (' . $item['item_name'] . ', +' . $qty . ' ' . $item['unit'] . ' from ' . $source . ')',
+                    $number
+                );
                 mysqli_commit($conn);
-                header('Location: relief_receipt_monitor.php?done=' . urlencode($number)); exit;
+                header('Location: relief_receipt_monitor.php?done=' . urlencode($number));
+                exit;
             }
         } catch (Throwable $e) {
             mysqli_rollback($conn);
@@ -64,41 +74,44 @@ $items = dbGetAll($conn, 'relief_items', 'item_name');
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Record Relief Receipt</title>
-    <link rel="stylesheet" href="<?= relEsc(relCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
-<main>
-    <h1>Record Relief Receipt</h1>
-    <?php foreach ($errors as $err): ?><div class="error-box"><?= relEsc($err) ?></div><?php endforeach; ?>
+    <?php include 'includes/header.php'; ?>
+    <main>
+        <h1>Record Relief Receipt</h1>
+        <?php foreach ($errors as $err): ?><div class="error-box"><?= relEsc($err) ?></div><?php endforeach; ?>
 
-    <?php if (!$items): ?>
-        <div class="error-box">There are no relief items yet. <a href="relief_item_register.php">Register an item first.</a></div>
-    <?php endif; ?>
+        <?php if (!$items): ?>
+            <div class="error-box">There are no relief items yet. <a href="relief_item_register.php">Register an item first.</a></div>
+        <?php endif; ?>
 
-    <form method="post">
-        <label>Relief item
-            <select name="relief_item_id">
-                <option value="">-- choose --</option>
-                <?php foreach ($items as $i): ?>
-                    <option value="<?= (int) $i['relief_item_id'] ?>" <?= $selected === (int) $i['relief_item_id'] ? 'selected' : '' ?>>
-                        <?= relEsc($i['item_name'] . ' (' . $i['unit'] . ')') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </label>
+        <form method="post">
+            <label>Relief item
+                <select name="relief_item_id">
+                    <option value="">-- choose --</option>
+                    <?php foreach ($items as $i): ?>
+                        <option value="<?= (int) $i['relief_item_id'] ?>" <?= $selected === (int) $i['relief_item_id'] ? 'selected' : '' ?>>
+                            <?= relEsc($i['item_name'] . ' (' . $i['unit'] . ')') ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
 
-        <label>Source (donor or supplier) <input type="text" name="source" maxlength="100" value="<?= relEsc($source) ?>"></label>
-        <label>Quantity <input type="number" name="quantity" min="1" value="<?= relEsc($qtyRaw) ?>"></label>
-        <label>Date received <input type="date" name="date_received" max="<?= date('Y-m-d') ?>" value="<?= relEsc($dateReceived) ?>"></label>
-        <label>Expiration date (optional) <input type="date" name="expiration_date" value="<?= relEsc($expiration) ?>"></label>
+            <label>Source (donor or supplier) <input type="text" name="source" maxlength="100" value="<?= relEsc($source) ?>"></label>
+            <label>Quantity <input type="number" name="quantity" min="1" value="<?= relEsc($qtyRaw) ?>"></label>
+            <label>Date received <input type="date" name="date_received" max="<?= date('Y-m-d') ?>" value="<?= relEsc($dateReceived) ?>"></label>
+            <label>Expiration date (optional) <input type="date" name="expiration_date" value="<?= relEsc($expiration) ?>"></label>
 
-        <p><button type="submit">Save receipt</button> <a href="relief_monitor.php">Back to relief inventory</a></p>
-    </form>
-</main>
-<?php include 'includes/footer.php'; ?>
+            <p><button type="submit">Save receipt</button> <a href="relief_monitor.php">Back to relief inventory</a></p>
+        </form>
+    </main>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

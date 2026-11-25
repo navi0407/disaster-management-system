@@ -1,6 +1,7 @@
 <?php
 // Small box that shows who is logged in. Paste the call into includes/header.php.
-function authRenderUserBox() {
+function authRenderUserBox()
+{
     $u = authUser();
     if (!$u) return;
     echo '<div class="user-box">Signed in as <strong>' . authEsc($u['username']) . '</strong> (' . authEsc($u['role']) . ') | ';

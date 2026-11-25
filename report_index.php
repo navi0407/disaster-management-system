@@ -12,6 +12,7 @@ $reports = [
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Reports</title>
@@ -19,17 +20,19 @@ $reports = [
     <link rel="stylesheet" href="fonts.css?v=8">
     <link rel="stylesheet" href="theme.css?v=8">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
-<main class="wide">
-    <h1>Reports</h1>
-    <p>Every report can be filtered, printed, and downloaded as a CSV file.</p>
-    <div class="report-cards">
-    <?php foreach ($reports as [$file, $title, $text]): ?>
-        <a class="report-card" href="<?= rptEsc($file) ?>"><strong><?= rptEsc($title) ?></strong><span><?= rptEsc($text) ?></span></a>
-    <?php endforeach; ?>
-    </div>
-</main>
-<?php include 'includes/footer.php'; ?>
+    <?php include 'includes/header.php'; ?>
+    <main class="wide">
+        <h1>Reports</h1>
+        <p>Every report can be filtered, printed, and downloaded as a CSV file.</p>
+        <div class="report-cards">
+            <?php foreach ($reports as [$file, $title, $text]): ?>
+                <a class="report-card" href="<?= rptEsc($file) ?>"><strong><?= rptEsc($title) ?></strong><span><?= rptEsc($text) ?></span></a>
+            <?php endforeach; ?>
+        </div>
+    </main>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

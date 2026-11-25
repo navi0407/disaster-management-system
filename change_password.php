@@ -3,7 +3,8 @@ require_once 'config/db.php';
 require_once 'includes/crud.php';
 require_once 'includes/audit.php';
 $me = authUser();
-$errors = []; $done = false;
+$errors = [];
+$done = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $current = (string) ($_POST['current'] ?? '');
@@ -27,25 +28,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Change Password</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
-<main>
-    <h1>Change Password</h1>
-    <?php if ($done): ?><div class="success-box">Your password was changed.</div><?php endif; ?>
-    <?php foreach ($errors as $err): ?><div class="error-box"><?= authEsc($err) ?></div><?php endforeach; ?>
-    <form method="post" autocomplete="off">
-        <?= authCsrfField() ?>
-        <label>Current password <input type="password" name="current"></label>
-        <label>New password (8 characters or more) <input type="password" name="new"></label>
-        <label>New password again <input type="password" name="again"></label>
-        <p><button type="submit">Change password</button></p>
-    </form>
-</main>
-<?php include 'includes/footer.php'; ?>
+    <?php include 'includes/header.php'; ?>
+    <main>
+        <h1>Change Password</h1>
+        <?php if ($done): ?><div class="success-box">Your password was changed.</div><?php endif; ?>
+        <?php foreach ($errors as $err): ?><div class="error-box"><?= authEsc($err) ?></div><?php endforeach; ?>
+        <form method="post" autocomplete="off">
+            <?= authCsrfField() ?>
+            <label>Current password <input type="password" name="current"></label>
+            <label>New password (8 characters or more) <input type="password" name="new"></label>
+            <label>New password again <input type="password" name="again"></label>
+            <p><button type="submit">Change password</button></p>
+        </form>
+    </main>
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

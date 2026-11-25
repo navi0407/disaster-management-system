@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['disaster_id'], $_POST
         if (!in_array($_POST['new_status'], $allowed, true)) {
             // Lab 6: restrict invalid transitions, and now tell the user why nothing happened
             $errors[] = 'A disaster can only stay as it is or move one step forward. "' . $current['status']
-                      . '" cannot jump to "' . $_POST['new_status'] . '".';
+                . '" cannot jump to "' . $_POST['new_status'] . '".';
         } else {
             try {
                 $updateData = ['status' => $_POST['new_status']];
@@ -86,90 +86,104 @@ $allTypes = dbGetAll($conn, 'disaster_types', 'type_name');
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Disaster Monitoring</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars(authCssPath()) ?>">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-<?php include 'includes/header.php'; ?>
+    <?php include 'includes/header.php'; ?>
 
-<main>
-    <h1>Disaster Monitoring</h1>
+    <main>
+        <h1>Disaster Monitoring</h1>
 
-    <?php foreach ($errors as $err): ?><div class="error-box"><?= htmlspecialchars($err) ?></div><?php endforeach; ?>
+        <?php foreach ($errors as $err): ?><div class="error-box"><?= htmlspecialchars($err) ?></div><?php endforeach; ?>
 
-    <?php if (isset($_GET['registered'])): ?>
-        <div class="success-box">Disaster <?= htmlspecialchars($_GET['registered']) ?> registered successfully.</div>
-    <?php endif; ?>
-
-    <p><a href="disaster_register.php">+ Register a new disaster</a></p>
-
-    <form method="get" class="filter-bar">
-        <input type="text" name="q" placeholder="Search number, name, or area..." value="<?= htmlspecialchars($query) ?>">
-        <select name="type">
-            <option value="">All Types</option>
-            <?php foreach ($allTypes as $t): ?>
-                <option value="<?= $t['disaster_type_id'] ?>" <?= $typeFilter == $t['disaster_type_id'] ? 'selected' : '' ?>><?= htmlspecialchars($t['type_name']) ?></option>
-            <?php endforeach; ?>
-        </select>
-        <select name="severity">
-            <option value="">All Severities</option>
-            <?php foreach (['Low', 'Moderate', 'Severe', 'Catastrophic'] as $s): ?>
-                <option <?= $severityFilter === $s ? 'selected' : '' ?>><?= $s ?></option>
-            <?php endforeach; ?>
-        </select>
-        <select name="status">
-            <option value="">All Statuses</option>
-            <?php foreach (['Reported', 'Monitoring', 'Active', 'Response', 'Recovery', 'Closed'] as $s): ?>
-                <option <?= $statusFilter === $s ? 'selected' : '' ?>><?= $s ?></option>
-            <?php endforeach; ?>
-        </select>
-        <button type="submit">Filter</button>
-    </form>
-
-    <table class="data-table">
-        <thead>
-            <tr><th>Number</th><th>Name</th><th>Type</th><th>Area</th><th>Severity</th><th>Status</th><th>Reported</th><th>Change Status</th></tr>
-        </thead>
-        <tbody>
-        <?php if (empty($disasters)): ?>
-            <tr><td colspan="8">No records found.</td></tr>
+        <?php if (isset($_GET['registered'])): ?>
+            <div class="success-box">Disaster <?= htmlspecialchars($_GET['registered']) ?> registered successfully.</div>
         <?php endif; ?>
-        <?php foreach ($disasters as $d): ?>
-            <?php
-                $locked = isStatusLocked('disasters', $d['status']);
-                $nextOptions = getNextAllowedStatuses('disasters', $d['status']);
-            ?>
-            <tr>
-                <td><?= htmlspecialchars($d['disaster_number']) ?></td>
-                <td><?= htmlspecialchars($d['disaster_name']) ?></td>
-                <td><?= htmlspecialchars($d['type_name']) ?></td>
-                <td><?= htmlspecialchars($d['area_affected']) ?></td>
-                <td><?= htmlspecialchars($d['severity']) ?></td>
-                <td class="status-<?= strtolower($d['status']) ?>"><?= htmlspecialchars($d['status']) ?></td>
-                <td><?= htmlspecialchars($d['date_reported']) ?></td>
-                <td>
-                    <?php if ($locked): ?>
-                        Closed (locked)
-                    <?php else: ?>
-                        <form method="post" class="inline-form">
-                            <input type="hidden" name="disaster_id" value="<?= $d['disaster_id'] ?>">
-                            <select name="new_status">
-                                <?php foreach ($nextOptions as $opt): ?>
-                                    <option value="<?= $opt ?>" <?= $opt === $d['status'] ? 'selected' : '' ?>><?= $opt ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <button type="submit">Update</button>
-                        </form>
-                    <?php endif; ?>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-</main>
 
-<?php include 'includes/footer.php'; ?>
+        <p><a href="disaster_register.php">+ Register a new disaster</a></p>
+
+        <form method="get" class="filter-bar">
+            <input type="text" name="q" placeholder="Search number, name, or area..." value="<?= htmlspecialchars($query) ?>">
+            <select name="type">
+                <option value="">All Types</option>
+                <?php foreach ($allTypes as $t): ?>
+                    <option value="<?= $t['disaster_type_id'] ?>" <?= $typeFilter == $t['disaster_type_id'] ? 'selected' : '' ?>><?= htmlspecialchars($t['type_name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <select name="severity">
+                <option value="">All Severities</option>
+                <?php foreach (['Low', 'Moderate', 'Severe', 'Catastrophic'] as $s): ?>
+                    <option <?= $severityFilter === $s ? 'selected' : '' ?>><?= $s ?></option>
+                <?php endforeach; ?>
+            </select>
+            <select name="status">
+                <option value="">All Statuses</option>
+                <?php foreach (['Reported', 'Monitoring', 'Active', 'Response', 'Recovery', 'Closed'] as $s): ?>
+                    <option <?= $statusFilter === $s ? 'selected' : '' ?>><?= $s ?></option>
+                <?php endforeach; ?>
+            </select>
+            <button type="submit">Filter</button>
+        </form>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Number</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Area</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Reported</th>
+                    <th>Change Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($disasters)): ?>
+                    <tr>
+                        <td colspan="8">No records found.</td>
+                    </tr>
+                <?php endif; ?>
+                <?php foreach ($disasters as $d): ?>
+                    <?php
+                    $locked = isStatusLocked('disasters', $d['status']);
+                    $nextOptions = getNextAllowedStatuses('disasters', $d['status']);
+                    ?>
+                    <tr>
+                        <td><?= htmlspecialchars($d['disaster_number']) ?></td>
+                        <td><?= htmlspecialchars($d['disaster_name']) ?></td>
+                        <td><?= htmlspecialchars($d['type_name']) ?></td>
+                        <td><?= htmlspecialchars($d['area_affected']) ?></td>
+                        <td><?= htmlspecialchars($d['severity']) ?></td>
+                        <td class="status-<?= strtolower($d['status']) ?>"><?= htmlspecialchars($d['status']) ?></td>
+                        <td><?= htmlspecialchars($d['date_reported']) ?></td>
+                        <td>
+                            <?php if ($locked): ?>
+                                Closed (locked)
+                            <?php else: ?>
+                                <form method="post" class="inline-form">
+                                    <input type="hidden" name="disaster_id" value="<?= $d['disaster_id'] ?>">
+                                    <select name="new_status">
+                                        <?php foreach ($nextOptions as $opt): ?>
+                                            <option value="<?= $opt ?>" <?= $opt === $d['status'] ? 'selected' : '' ?>><?= $opt ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <button type="submit">Update</button>
+                                </form>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </main>
+
+    <?php include 'includes/footer.php'; ?>
 </body>
+
 </html>

@@ -6,7 +6,8 @@
 // Rule 12: a Closed disaster cannot be changed by ordinary users. Only an Administrator may.
 //   Use it on the disaster edit page and on anything that changes data under a disaster:
 //     $errors = vCollect([ ruleDisasterOpen($conn, $disasterId) ]);
-function ruleDisasterOpen($conn, $disasterId) {
+function ruleDisasterOpen($conn, $disasterId)
+{
     $stmt = mysqli_prepare($conn, "SELECT status FROM disasters WHERE disaster_id = ?");
     mysqli_stmt_bind_param($stmt, 'i', $disasterId);
     mysqli_stmt_execute($stmt);
@@ -20,7 +21,8 @@ function ruleDisasterOpen($conn, $disasterId) {
 
 // Rule 5: a center cannot take more people than its capacity unless the user is allowed to override.
 //   $adding = how many people are being checked in (usually 1).
-function ruleCenterHasRoom($conn, $centerId, $adding = 1, $override = false) {
+function ruleCenterHasRoom($conn, $centerId, $adding = 1, $override = false)
+{
     $stmt = mysqli_prepare($conn, "SELECT center_name, capacity,
         (SELECT COUNT(*) FROM evacuees e WHERE e.center_id = evacuation_centers.center_id AND e.status = 'Checked-in') AS inside
         FROM evacuation_centers WHERE center_id = ?");
@@ -35,7 +37,8 @@ function ruleCenterHasRoom($conn, $centerId, $adding = 1, $override = false) {
 }
 
 // Rule 3: a resident cannot be checked in at two places at once.
-function ruleResidentNotCheckedIn($conn, $residentId) {
+function ruleResidentNotCheckedIn($conn, $residentId)
+{
     $stmt = mysqli_prepare($conn, "SELECT c.center_name FROM evacuees e JOIN evacuation_centers c ON c.center_id = e.center_id
                                    WHERE e.resident_id = ? AND e.status = 'Checked-in' LIMIT 1");
     mysqli_stmt_bind_param($stmt, 'i', $residentId);

@@ -12,24 +12,29 @@
 //
 // The "?:" means: use the first message, and only check the second thing if the first passed.
 
-function vCollect($messages) {
+function vCollect($messages)
+{
     return array_values(array_filter($messages, fn($m) => $m !== '' && $m !== null));
 }
 
-function vRequired($label, $value) {
+function vRequired($label, $value)
+{
     return trim((string) $value) === '' ? "$label is required." : '';
 }
 
-function vMax($label, $value, $max) {
+function vMax($label, $value, $max)
+{
     return mb_strlen(trim((string) $value)) > $max ? "$label must be $max characters or less." : '';
 }
 
-function vMin($label, $value, $min) {
+function vMin($label, $value, $min)
+{
     return mb_strlen(trim((string) $value)) < $min ? "$label must be at least $min characters." : '';
 }
 
 // Whole number between $min and $max. Rejects letters, decimals, negatives and blanks.
-function vWholeNumber($label, $value, $min = 0, $max = 1000000) {
+function vWholeNumber($label, $value, $min = 0, $max = 1000000)
+{
     $v = trim((string) $value);
     if ($v === '' || !ctype_digit($v)) return "$label must be a whole number, $min or more.";
     if ((int) $v < $min) return "$label must be at least $min.";
@@ -38,19 +43,22 @@ function vWholeNumber($label, $value, $min = 0, $max = 1000000) {
 }
 
 // A real calendar date written as YYYY-MM-DD (2026-02-31 is rejected).
-function vValidDate($value) {
+function vValidDate($value)
+{
     $d = DateTime::createFromFormat('Y-m-d', (string) $value);
     return $d && $d->format('Y-m-d') === $value;
 }
 
-function vDate($label, $value, $required = false) {
+function vDate($label, $value, $required = false)
+{
     $v = trim((string) $value);
     if ($v === '') return $required ? "$label is required." : '';
     return vValidDate($v) ? '' : "$label is not a valid date.";
 }
 
 // For a datetime-local box ("2026-11-21T08:30") or a full "2026-11-21 08:30:00".
-function vDateTime($label, $value, $required = false) {
+function vDateTime($label, $value, $required = false)
+{
     $v = trim((string) $value);
     if ($v === '') return $required ? "$label is required." : '';
     $v = str_replace('T', ' ', $v);
@@ -62,31 +70,36 @@ function vDateTime($label, $value, $required = false) {
 }
 
 // The end must not come before the start. Both can be dates or datetimes; blank end is fine.
-function vNotBefore($labelEnd, $end, $labelStart, $start) {
+function vNotBefore($labelEnd, $end, $labelStart, $start)
+{
     if (trim((string) $end) === '' || trim((string) $start) === '') return '';
     return strtotime(str_replace('T', ' ', $end)) < strtotime(str_replace('T', ' ', $start))
         ? "$labelEnd cannot be earlier than $labelStart." : '';
 }
 
-function vNotFuture($label, $value) {
+function vNotFuture($label, $value)
+{
     $v = trim((string) $value);
     if ($v === '') return '';
     return strtotime(str_replace('T', ' ', $v)) > time() ? "$label cannot be in the future." : '';
 }
 
-function vNotPast($label, $value) {
+function vNotPast($label, $value)
+{
     $v = trim((string) $value);
     if ($v === '') return '';
     return substr(str_replace('T', ' ', $v), 0, 10) < date('Y-m-d') ? "$label cannot be in the past." : '';
 }
 
 // The value must be one of the allowed choices (stops a forged dropdown value).
-function vOneOf($label, $value, array $allowed) {
+function vOneOf($label, $value, array $allowed)
+{
     return in_array($value, $allowed, true) ? '' : "$label has an invalid choice.";
 }
 
 // Philippine style numbers: 09171234567, +639171234567, or a landline like 078-123-4567. Blank is fine.
-function vPhone($label, $value) {
+function vPhone($label, $value)
+{
     $v = trim((string) $value);
     if ($v === '') return '';
     if (!preg_match('/^[0-9+\-\s()]{7,20}$/', $v) || strlen(preg_replace('/\D/', '', $v)) < 7)
@@ -95,7 +108,8 @@ function vPhone($label, $value) {
 }
 
 // Letters, spaces, dots, hyphens and apostrophes (Dela Cruz, Ma. Luisa, O'Brien).
-function vPersonName($label, $value, $max = 50) {
+function vPersonName($label, $value, $max = 50)
+{
     $v = trim((string) $value);
     if ($v === '') return "$label is required.";
     if (mb_strlen($v) > $max) return "$label must be $max characters or less.";
@@ -104,10 +118,18 @@ function vPersonName($label, $value, $max = 50) {
 }
 
 // A record id from a dropdown must point to a row that exists.
-function vExists($conn, $label, $table, $idField, $id) {
-    $allowed = ['disasters' => 'disaster_id', 'disaster_types' => 'disaster_type_id', 'residents' => 'resident_id',
-                'households' => 'household_id', 'evacuation_centers' => 'center_id', 'resources' => 'resource_id',
-                'resource_categories' => 'category_id', 'relief_items' => 'relief_item_id'];
+function vExists($conn, $label, $table, $idField, $id)
+{
+    $allowed = [
+        'disasters' => 'disaster_id',
+        'disaster_types' => 'disaster_type_id',
+        'residents' => 'resident_id',
+        'households' => 'household_id',
+        'evacuation_centers' => 'center_id',
+        'resources' => 'resource_id',
+        'resource_categories' => 'category_id',
+        'relief_items' => 'relief_item_id'
+    ];
     if (($allowed[$table] ?? null) !== $idField) return "$label could not be checked.";   // only known tables, never user text
     if ((int) $id <= 0) return "Please choose the $label.";
     $stmt = mysqli_prepare($conn, "SELECT 1 FROM $table WHERE $idField = ? LIMIT 1");
